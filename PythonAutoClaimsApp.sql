@@ -25,6 +25,7 @@
 		2024-07-27: Added Inserts for Vehicles and Homes for Initial data set.
 		2024-07-27: Added Inserts for Policies.
 		2024-07-28: Added Inserts for Vehicle Coverages.
+		2024-07-31: Set Default_Schema to paca for pacauser
 		
 
     TO DO (Requested):
@@ -156,6 +157,8 @@ CREATE SCHEMA paca AUTHORIZATION pacauser
 GRANT SELECT ON SCHEMA::paca TO contentcomposer
 GO
 
+ALTER USER pacauser WITH DEFAULT_SCHEMA = paca
+
 USE MASTER
 
 GRANT VIEW SERVER STATE TO pacauser
@@ -196,7 +199,7 @@ TO (January, February, March,
 GO
 
 **/
-
+EXECUTE AS LOGIN = N'pacauser'
 BEGIN TRY
 CREATE TABLE ACCOUNTS
 (
