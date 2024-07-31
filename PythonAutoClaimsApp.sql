@@ -25,7 +25,9 @@
 		2024-07-27: Added Inserts for Vehicles and Homes for Initial data set.
 		2024-07-27: Added Inserts for Policies.
 		2024-07-28: Added Inserts for Vehicle Coverages.
-		2024-07-31: Set Default_Schema to paca for pacauser
+		2024-07-31: Set Default_Schema to paca for pacauser.
+		2024-07-31: Granted Create Endpoint to pacauser.
+		2024-07-31: Adding in Queue Blocks for staging.
 		
 
     TO DO (Requested):
@@ -68,6 +70,8 @@
 		14. How to calculate decimals (x,y) max value in sql server, https://stackoverflow.com/questions/37529664/how-to-calculate-decimalx-y-max-value-in-sql-server
 		15. SELECT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16
 		16. Predicates, https://learn.microsoft.com/en-us/sql/t-sql/queries/predicates?view=sql-server-ver16
+		17. CREATE QUEUE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-queue-transact-sql?view=sql-server-ver16
+		18. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
@@ -154,14 +158,16 @@ GO
 **/
 
 CREATE SCHEMA paca AUTHORIZATION pacauser
-GRANT SELECT ON SCHEMA::paca TO contentcomposer
+GRANT SELECT ON SCHEMA::paca TO contentcomposer;
 GO
 
-ALTER USER pacauser WITH DEFAULT_SCHEMA = paca
+ALTER USER pacauser WITH DEFAULT_SCHEMA = paca;
+GO
 
 USE MASTER
 
 GRANT VIEW SERVER STATE TO pacauser
+GRANT CREATE ENDPOINT TO pacauser
 GO
 
 -- sp_addrolemember and sp_addsrvrolemember have been replaced with ALTER SERVER ROLE.
@@ -199,6 +205,7 @@ TO (January, February, March,
 GO
 
 **/
+
 EXECUTE AS LOGIN = N'pacauser'
 BEGIN TRY
 CREATE TABLE ACCOUNTS
@@ -622,6 +629,26 @@ END CATCH;
 GO
 
 /*
+	In order to expose the web service we need to make
+	a Queue. A queue may have a stored procedure associated with it.
+	Therefore, These will need to designed.
+*/
+
+CREATE QUEUE get_client_account
+   WITH 
+   STATUS = ON,
+   RETENTION = OFF ,
+   ACTIVATION (
+		STATUS = ON,
+		PROCEDURE_NAME = get_client_account ,
+		MAX_QUEUE_READERS = 16384, 
+		EXECUTE AS SELF),
+   POISON_MESSAGE_HANDLING (STATUS = ON) 
+   ON N'PRIMARY'
+
+
+
+/*
 
 	INSERT OF OUR TEST ACCOUNTS.
 	Using TRY...CATCH as that fits best practices.
@@ -793,7 +820,7 @@ John Bonham is not needed for this portion of our test data. He does not have a 
 @jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham'),
 */
 
-SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'PJones');
+SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
 
 SET @vehicle_count += 1; -- 1, 0 + 1
 
