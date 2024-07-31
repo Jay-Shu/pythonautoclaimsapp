@@ -64,11 +64,13 @@
 		11. RAISERROR(Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/raiserror-transact-sql?view=sql-server-ver16
 		12. TRY...CATCH (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/try-catch-transact-sql?view=sql-server-ver16
 		13. += (Addition Assignment) (T-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/add-equals-transact-sql?view=sql-server-ver16
+		14. How to calculate decimals (x,y) max value in sql server, https://stackoverflow.com/questions/37529664/how-to-calculate-decimalx-y-max-value-in-sql-server
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
 		GO Keyword does not require a semi-colon. As it would be redundant.
 		BEGIN...END Blocks have been phased out completely for TRY...CATCH and GO.
+		Calculation for DECIMAL(X,Y): (10 ^ (x-y)) - (10 ^ -y) . Absolute and Negative Values.
 **/
 
 
@@ -369,7 +371,7 @@ CREATE TABLE HOMES
 (
 	HOMES_ID INT IDENTITY(1,1),
 	HOMES_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
-	HOMES_PREMIUM DECIMAL(5,2) NOT NULL,
+	HOMES_PREMIUM DECIMAL(10,2) NOT NULL,
 	HOMES_ADDRESS NVARCHAR(128) NOT NULL,
 	HOMES_SEC1_DW DECIMAL(10,2) NULL,
 	HOMES_SEC1_DWEX DECIMAL(10,2) NULL,
@@ -644,10 +646,10 @@ DECLARE @rplant NVARCHAR(11),
 @jbonham NVARCHAR(11),
 @jpauljones NVARCHAR(11);
 
-SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant'),
-@jpage = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page'),
-@jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham'),
-@jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'PJones');
+SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant');
+SET @jpage = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page');
+SET @jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham');
+SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
 
 /*
 
@@ -666,7 +668,7 @@ SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME =
 */
 
 --Robert Plant needs a Vehicle
-INSERT INTO VECHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
 /*
 
@@ -688,17 +690,17 @@ INSERT INTO VECHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'Hyund
 */
 
 --Jimmy Page needs a Vehicle and a Home.
-INSERT INTO VECHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO VEHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
-INSERT INTO HOMES VALUES (@jpage,1374.28,N'1348 Zeppelin Ct., Kansas City, Kansas, 66025',1000.00,100.00,214.60,10000.00,250000.00,35000.00,500.00,250.00,125.00,250.00);
+INSERT INTO HOMES VALUES (@jpage,1374.28,N'1348 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
 --John Bonham needs a Home
-INSERT INTO HOMES VALUES (@jbonham,1374.28,N'1350 Zeppelin Ct., Kansas City, Kansas, 66025',1000.00,100.00,214.60,10000.00,250000.00,35000.00,500.00,250.00,125.00,250.00);
+INSERT INTO HOMES VALUES (@jbonham,1374.28,N'1350 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
 --John Paul Jones needs a Home and a Vehicle
-INSERT INTO HOMES VALUES (@jpauljones,1374.28,N'1352 Zeppelin Ct., Kansas City, Kansas, 66025',1000.00,100.00,214.60,10000.00,250000.00,35000.00,500.00,250.00,125.00,250.00);
+INSERT INTO HOMES VALUES (@jpauljones,1374.28,N'1352 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
-INSERT INTO VECHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 END TRY
 BEGIN CATCH
 RAISERROR(N'Unable to perform Vehicles and Homes inserts.',20,-1)
@@ -766,15 +768,15 @@ DECLARE @rplant NVARCHAR(11),
 @jpauljones NVARCHAR(11),
 @vehicle_count int = 0;
 
-SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant'),
-@jpage = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page'),
+SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant');
+SET @jpage = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page');
 
 /*
 John Bonham is not needed for this portion of our test data. He does not have a Car insurance policy.
 @jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham'),
 */
 
-@jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'PJones');
+SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'PJones');
 
 SET @vehicle_count += 1; -- 1, 0 + 1
 
