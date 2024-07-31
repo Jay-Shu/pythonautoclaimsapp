@@ -65,12 +65,26 @@
 		12. TRY...CATCH (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/try-catch-transact-sql?view=sql-server-ver16
 		13. += (Addition Assignment) (T-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/add-equals-transact-sql?view=sql-server-ver16
 		14. How to calculate decimals (x,y) max value in sql server, https://stackoverflow.com/questions/37529664/how-to-calculate-decimalx-y-max-value-in-sql-server
+		15. SELECT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16
+		16. Predicates, https://learn.microsoft.com/en-us/sql/t-sql/queries/predicates?view=sql-server-ver16
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
 		GO Keyword does not require a semi-colon. As it would be redundant.
 		BEGIN...END Blocks have been phased out completely for TRY...CATCH and GO.
 		Calculation for DECIMAL(X,Y): (10 ^ (x-y)) - (10 ^ -y) . Absolute and Negative Values.
+		Logical Processing Order:	
+    		FROM
+    		ON
+    		JOIN
+    		WHERE
+    		GROUP BY
+    		WITH CUBE or WITH ROLLUP
+    		HAVING
+    		SELECT
+    		DISTINCT
+    		ORDER BY
+    		TOP
 **/
 
 
