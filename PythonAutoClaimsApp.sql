@@ -28,6 +28,9 @@
 		2024-07-31: Set Default_Schema to paca for pacauser.
 		2024-07-31: Granted Create Endpoint to pacauser.
 		2024-07-31: Adding in Queue Blocks for staging.
+		2024-07-31: Correctly Commented out Queue Blocks.
+		2024-07-31: Removed DEFAULT_SCHEMA keyword from CREATE LOGIN. This is invalid and needs to
+			be utilized through ALTER USER.
 		
 
     TO DO (Requested):
@@ -137,6 +140,7 @@ GO
 USE PACA
 CREATE LOGIN pacauser WITH PASSWORD = N'pacauser',
 	DEFAULT_DATABASE = PACA,
+	--DEFAULT_SCHEMA = paca, Invalid Keyword for CREATE LOGIN.
 	CHECK_EXPIRATION = OFF,
 	CHECK_POLICY = OFF
 GO
@@ -208,7 +212,7 @@ GO
 
 EXECUTE AS LOGIN = N'pacauser'
 BEGIN TRY
-CREATE TABLE ACCOUNTS
+CREATE TABLE paca.ACCOUNTS
 (
 	ACCOUNT_ID INT IDENTITY(1,1),
 	ACCOUNT_NUM	AS N'ICA' + RIGHT('00000000' + CAST(ACCOUNT_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
@@ -266,7 +270,7 @@ GO
 **/
 
 BEGIN TRY
-CREATE INDEX account_idx ON ACCOUNTS(ACCOUNT_NUM ASC,ACCOUNT_FIRST_NAME)
+CREATE INDEX account_idx ON paca.ACCOUNTS(ACCOUNT_NUM ASC,ACCOUNT_FIRST_NAME)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
 END TRY
@@ -287,7 +291,7 @@ END CATCH;
 GO
 
 BEGIN TRY
-CREATE INDEX account_idx2 ON ACCOUNTS(ACCOUNT_NUM DESC,
+CREATE INDEX account_idx2 ON paca.ACCOUNTS(ACCOUNT_NUM DESC,
 	ACCOUNT_FIRST_NAME ASC,ACCOUNT_LAST_NAME ASC,ACCOUNT_CITY)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
@@ -309,7 +313,7 @@ END CATCH;
 GO
 
 BEGIN TRY
-CREATE INDEX account_idx3 ON ACCOUNTS(ACCOUNT_CITY,ACCOUNT_STATE,
+CREATE INDEX account_idx3 ON paca.ACCOUNTS(ACCOUNT_CITY,ACCOUNT_STATE,
 	ACCOUNT_FIRST_NAME ASC,ACCOUNT_LAST_NAME ASC)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
@@ -345,7 +349,7 @@ GO
 **/
 
 BEGIN TRY
-CREATE TABLE VEHICLES
+CREATE TABLE paca.VEHICLES
 (
 	VEHICLE_ID INT IDENTITY(1,1),
 	VEHICLE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
@@ -391,7 +395,7 @@ GO
 **/
 
 BEGIN TRY
-CREATE TABLE HOMES
+CREATE TABLE paca.HOMES
 (
 	HOMES_ID INT IDENTITY(1,1),
 	HOMES_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
@@ -431,7 +435,7 @@ END CATCH;
 GO
 
 BEGIN TRY
-CREATE INDEX homes_idx ON HOMES(HOMES_ACCOUNT_NUM ASC,HOMES_ADDRESS)
+CREATE INDEX homes_idx ON paca.HOMES(HOMES_ACCOUNT_NUM ASC,HOMES_ADDRESS)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
 END TRY
@@ -462,7 +466,7 @@ Car
 **/
 
 BEGIN TRY
-CREATE TABLE POLICIES
+CREATE TABLE paca.POLICIES
 (
 	POLICIES_ID INT IDENTITY(1,1),
 	POLICIES_ID_ACTUAL AS N'P-' + RIGHT('00000000' + CAST(POLICIES_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
@@ -552,7 +556,7 @@ TO-DO: Insert Test Data.
 
 -- Needs the same precision as above with DECIMAL(x,y)
 BEGIN TRY
-CREATE TABLE VEHICLE_COVERAGES
+CREATE TABLE paca.VEHICLE_COVERAGES
 (
 	VEHICLES_COVERAGE_ID INT IDENTITY(1,1),
 	VEHICLES_COVERAGE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
@@ -589,7 +593,7 @@ END CATCH;
 GO
 
 BEGIN TRY
-CREATE TABLE VEHICLE_CLAIMS
+CREATE TABLE paca.VEHICLE_CLAIMS
 (
 	VEHICLE_CLAIMS_ID INT IDENTITY(1,1),
 	VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER AS N'ICN' + RIGHT('00000000' + CAST(VEHICLE_CLAIMS_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
@@ -634,6 +638,7 @@ GO
 	Therefore, These will need to designed.
 */
 
+/*
 CREATE QUEUE get_client_account
    WITH 
    STATUS = ON,
@@ -645,7 +650,7 @@ CREATE QUEUE get_client_account
 		EXECUTE AS SELF),
    POISON_MESSAGE_HANDLING (STATUS = ON) 
    ON N'PRIMARY'
-
+*/
 
 
 /*
@@ -656,10 +661,10 @@ CREATE QUEUE get_client_account
 */
 
 BEGIN TRY
-INSERT INTO ACCOUNTS VALUES (NULL,N'Robert',N'Plant',NULL,N'1346 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Car Insurance - Standalone' );
-INSERT INTO ACCOUNTS VALUES (NULL,N'Jimmy',N'Page',NULL,N'1348 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Car Insurance - Bundle Home' );
-INSERT INTO ACCOUNTS VALUES (NULL,N'John',N'Bonham',NULL,N'1350 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Home - Standalone' );
-INSERT INTO ACCOUNTS VALUES (NULL,N'John Paul',N'Jones',NULL,N'1352 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Home - Bundle Car Insurance' );
+INSERT INTO paca.ACCOUNTS VALUES (NULL,N'Robert',N'Plant',NULL,N'1346 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Car Insurance - Standalone' );
+INSERT INTO paca.ACCOUNTS VALUES (NULL,N'Jimmy',N'Page',NULL,N'1348 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Car Insurance - Bundle Home' );
+INSERT INTO paca.ACCOUNTS VALUES (NULL,N'John',N'Bonham',NULL,N'1350 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Home - Standalone' );
+INSERT INTO paca.ACCOUNTS VALUES (NULL,N'John Paul',N'Jones',NULL,N'1352 Zeppelin Ct.',NULL,N'Kansas City',N'Kansas',66025,NULL,CURRENT_TIMESTAMP,DATEADD(DD,1,DATEADD(yy,1,CURRENT_TIMESTAMP)),N'Home - Bundle Car Insurance' );
 END TRY
 BEGIN CATCH
 
@@ -690,10 +695,10 @@ DECLARE @rplant NVARCHAR(11),
 @jbonham NVARCHAR(11),
 @jpauljones NVARCHAR(11);
 
-SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant');
-SET @jpage = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page');
-SET @jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham');
-SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
+SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant');
+SET @jpage = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page');
+SET @jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham');
+SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
 
 /*
 
@@ -712,7 +717,7 @@ SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NA
 */
 
 --Robert Plant needs a Vehicle
-INSERT INTO VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
 /*
 
@@ -734,17 +739,17 @@ INSERT INTO VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'Hyunda
 */
 
 --Jimmy Page needs a Vehicle and a Home.
-INSERT INTO VEHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
-INSERT INTO HOMES VALUES (@jpage,1374.28,N'1348 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
+INSERT INTO paca.HOMES VALUES (@jpage,1374.28,N'1348 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
 --John Bonham needs a Home
-INSERT INTO HOMES VALUES (@jbonham,1374.28,N'1350 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
+INSERT INTO paca.HOMES VALUES (@jbonham,1374.28,N'1350 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
 --John Paul Jones needs a Home and a Vehicle
-INSERT INTO HOMES VALUES (@jpauljones,1374.28,N'1352 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
+INSERT INTO paca.HOMES VALUES (@jpauljones,1374.28,N'1352 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
-INSERT INTO VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 END TRY
 BEGIN CATCH
 RAISERROR(N'Unable to perform Vehicles and Homes inserts.',20,-1)
@@ -763,15 +768,15 @@ GO
 */
 
 BEGIN TRY
-INSERT INTO POLICIES VALUES (N'Car - Basic',123,N'This is the minimum policy requirement for a car.');
-INSERT INTO POLICIES VALUES (N'Car - Advanced',425,N'This is the middle ground policy.');
-INSERT INTO POLICIES VALUES (N'Car - Premium',513,N'This is the best car policy');
-INSERT INTO POLICIES VALUES (N'Home - Basic',283,N'This is the minimum policy requirement for a home.');
-INSERT INTO POLICIES VALUES (N'Home - Advanced',549,N'This is the middle ground policy.');
-INSERT INTO POLICIES VALUES (N'Home - Premium',495,N'This is the best home policy');
-INSERT INTO POLICIES VALUES (N'Car and Home Bundle - Basic',124,N'This is the minimum policy requirement for a home and car.');
-INSERT INTO POLICIES VALUES (N'Car and Home Bundle - Advanced',284,N'This is the middle ground policy.');
-INSERT INTO POLICIES VALUES (N'Car and Home Bundle - Premium',496,N'This is the best home and car policy.');
+INSERT INTO paca.POLICIES VALUES (N'Car - Basic',123,N'This is the minimum policy requirement for a car.');
+INSERT INTO paca.POLICIES VALUES (N'Car - Advanced',425,N'This is the middle ground policy.');
+INSERT INTO paca.POLICIES VALUES (N'Car - Premium',513,N'This is the best car policy');
+INSERT INTO paca.POLICIES VALUES (N'Home - Basic',283,N'This is the minimum policy requirement for a home.');
+INSERT INTO paca.POLICIES VALUES (N'Home - Advanced',549,N'This is the middle ground policy.');
+INSERT INTO paca.POLICIES VALUES (N'Home - Premium',495,N'This is the best home policy');
+INSERT INTO paca.POLICIES VALUES (N'Car and Home Bundle - Basic',124,N'This is the minimum policy requirement for a home and car.');
+INSERT INTO paca.POLICIES VALUES (N'Car and Home Bundle - Advanced',284,N'This is the middle ground policy.');
+INSERT INTO paca.POLICIES VALUES (N'Car and Home Bundle - Premium',496,N'This is the best home and car policy.');
 END TRY
 BEGIN CATCH
 RAISERROR(N'Unable to perform Policy inserts.',20,-1)
@@ -812,23 +817,23 @@ DECLARE @rplant NVARCHAR(11),
 @jpauljones NVARCHAR(11),
 @vehicle_count int = 0;
 
-SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant');
-SET @jpage = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page');
+SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant');
+SET @jpage = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page');
 
 /*
 John Bonham is not needed for this portion of our test data. He does not have a Car insurance policy.
 @jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham'),
 */
 
-SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
+SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
 
 SET @vehicle_count += 1; -- 1, 0 + 1
 
-INSERT INTO VEHICLE_COVERAGES VALUES (@rplant,@vehicle_count,10000.00,50000.00,1000.00,1000.00,500.00,125.00,100.00,50.00);
+INSERT INTO paca.VEHICLE_COVERAGES VALUES (@rplant,@vehicle_count,10000.00,50000.00,1000.00,1000.00,500.00,125.00,100.00,50.00);
 
 SET @vehicle_count += 1; -- 2, 1 + 1
 
-INSERT INTO VEHICLE_COVERAGES VALUES (@jpage,@vehicle_count,10000.00,50000.00,1000.00,1000.00,500.00,125.00,100.00,50.00);
+INSERT INTO paca.VEHICLE_COVERAGES VALUES (@jpage,@vehicle_count,10000.00,50000.00,1000.00,1000.00,500.00,125.00,100.00,50.00);
 
 /*
 
@@ -841,7 +846,7 @@ Trigger as it is not self-refernce-able (i.e. I cannot access the same data I am
 
 SET @vehicle_count += 1; --3, 2 + 1
 
-INSERT INTO VEHICLE_COVERAGES VALUES (@jpauljones,@vehicle_count,10000.00,50000.00,1000.00,1000.00,500.00,125.00,100.00,50.00);
+INSERT INTO paca.VEHICLE_COVERAGES VALUES (@jpauljones,@vehicle_count,10000.00,50000.00,1000.00,1000.00,500.00,125.00,100.00,50.00);
 
 END TRY
 BEGIN CATCH
