@@ -11,6 +11,7 @@
         2024-07-31: Created getAccounts_v1 for retrieving accounts in general.
         2024-07-31: Migrated to proper location for Git.
         2024-08-01: Created getAccounts_v2 for adding the Where clause for Searching.
+          i.e. Starts-with and Ends-With effectively (N'%' + @variableName and @variableName N'%').
 		
 
     TO DO (Requested):
@@ -104,9 +105,6 @@ CREATE PROCEDURE getAccounts_v2
   Intended to use First Name and Last Name.
   This is without the usage of like within the
   WHERE Clause.
-  TO-DO: make multiple pathways.
-
-  
 */
 
 @firstName NVARCHAR(64),
@@ -274,3 +272,82 @@ SELECT
   ,ERROR_LINE() AS ErrorLine  
   ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
+GO
+
+CREATE PROCEDURE getAccounts_v3
+@accountNum NVARCHAR(11)
+AS
+BEGIN TRY
+SELECT ACCOUNT_CITY,
+ACCOUNT_DATE_RENEWAL,
+ACCOUNT_DATE_START,
+ACCOUNT_FIRST_NAME,
+ACCOUNT_HONORIFICS,
+ACCOUNT_ID,
+ACCOUNT_LAST_NAME,
+ACCOUNT_NUM,
+ACCOUNT_PO_BOX,
+ACCOUNT_STATE,
+ACCOUNT_STREET_ADD_1,
+ACCOUNT_STREET_ADD_2,
+ACCOUNT_SUFFIX,
+ACCOUNT_TYPE,
+ACCOUNT_ZIP
+FROM paca.ACCOUNTS
+WHERE ACCOUNT_NUM = @accountNum
+END TRY
+BEGIN CATCH
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber  
+  ,ERROR_SEVERITY() AS ErrorSeverity  
+  ,ERROR_STATE() AS ErrorState  
+  ,ERROR_PROCEDURE() AS ErrorProcedure  
+  ,ERROR_LINE() AS ErrorLine  
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+GO
+
+CREATE PROCEDURE getAccounts_v4
+/*
+  This is for displaying the Vehicles with a specific account.
+*/
+@accountNum NVARCHAR(11)
+AS
+BEGIN TRY
+SELECT a.ACCOUNT_CITY,
+a.ACCOUNT_DATE_RENEWAL,
+a.ACCOUNT_DATE_START,
+a.ACCOUNT_FIRST_NAME,
+a.ACCOUNT_HONORIFICS,
+a.ACCOUNT_ID,
+a.ACCOUNT_LAST_NAME,
+a.ACCOUNT_NUM,
+a.ACCOUNT_PO_BOX,
+a.ACCOUNT_STATE,
+a.ACCOUNT_STREET_ADD_1,
+a.ACCOUNT_STREET_ADD_2,
+a.ACCOUNT_SUFFIX,
+a.ACCOUNT_TYPE,
+a.ACCOUNT_ZIP,
+v.VEHICLE_YEAR,
+v.VEHICLE_MAKE,
+v.VEHICLE_MODEL,
+v.VEHICLE_ADDRESS1_GARAGED,
+v.VEHICLE_ADDRESS2_GARAGED,
+v.VEHICLE_VEHICLE_USE,
+v.VEHICLE_ANNUAL_MILEAGE
+FROM paca.ACCOUNTS a
+INNER JOIN paca.VEHICLES v on v.VEHICLE_ACCOUNT_NUM
+WHERE ACCOUNT_NUM = @accountNum
+END TRY
+BEGIN CATCH
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber  
+  ,ERROR_SEVERITY() AS ErrorSeverity  
+  ,ERROR_STATE() AS ErrorState  
+  ,ERROR_PROCEDURE() AS ErrorProcedure  
+  ,ERROR_LINE() AS ErrorLine  
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+GO
+
