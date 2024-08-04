@@ -65,27 +65,20 @@ AS
 BEGIN TRY
 BEGIN TRANSACTION
 /*
-ACCOUNT_HONORIFICS	NVARCHAR(16) NULL,
-ACCOUNT_FIRST_NAME 	NVARCHAR(128) NOT NULL,
-ACCOUNT_LAST_NAME 	NVARCHAR(128) NOT NULL,
-ACCOUNT_SUFFIX		NVARCHAR(16) NULL,
-ACCOUNT_STREET_ADD_1 NVARCHAR(128) NOT NULL,
-ACCOUNT_STREET_ADD_2 NVARCHAR(128) NULL,
-ACCOUNT_CITY		NVARCHAR(128) NOT NULL,
-ACCOUNT_STATE	NVARCHAR(16) NOT NULL,
-ACCOUNT_ZIP		INT NOT NULL,
-ACCOUNT_PO_BOX	NVARCHAR(128) NULL,
-ACCOUNT_DATE_START	DATETIME NOT NULL,
-ACCOUNT_DATE_RENEWAL DATETIME NOT NULL,
-ACCOUNT_TYPE	NVARCHAR(64) NOT NULL,
+
+@accountNum: This is the Account Number Associated with the Client's Account.
+@accountItemToUpdate: This is the Item we are updating with the Account
+    itself. Vehicles and Homes will not be updated here.
+@accountItemVal: This is the Value Actual we are using to update the Account.
 */
 
 CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_HONORIFICS'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_HONORIFICS = CAST(@accountItemVal AS NVARCHAR(16))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -99,8 +92,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_FIRST_NAME'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_FIRST_NAME = CAST(@accountItemVal AS NVARCHAR(128))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -114,8 +108,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_LAST_NAME'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_LAST_NAME = CAST(@accountItemVal AS NVARCHAR(128))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -129,8 +124,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_SUFFIX'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_SUFFIX = CAST(@accountItemVal AS NVARCHAR(16))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -144,8 +140,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_STREET_ADD_1'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_STREET_ADD_1 = CAST(@accountItemVal AS NVARCHAR(128))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -159,8 +156,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_STREET_ADD_2'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_STREET_ADD_2 = CAST(@accountItemVal AS NVARCHAR(128))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -174,8 +172,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_CITY'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_CITY = CAST(@accountItemVal AS NVARCHAR(128))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -189,8 +188,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_STATE'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_STATE = CAST(@accountItemVal AS NVARCHAR(16))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -204,8 +204,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_ZIP'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_ZIP = CAST(@accountItemVal AS INT)
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -219,8 +220,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_PO_BOX'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_PO_BOX = CAST(@accountItemVal AS NVARCHAR(128))
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -234,8 +236,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_DATE_START'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_DATE_START = CAST(@accountItemVal AS DATETIME)
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -249,8 +252,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_DATE_RENEWAL'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_DATE_RENEWAL = CAST(@accountItemVal AS DATETIME)
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -264,8 +268,9 @@ CASE
     WHEN @accountItemToUpdate = N'ACCOUNT_TYPE'
     THEN
     BEGIN TRY
---UPDATE paca.ACCOUNTS
---SET
+        UPDATE paca.ACCOUNTS
+        SET ACCOUNT_TYPE = CAST(@accountItemVal AS INT)
+        WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
         SELECT 
@@ -280,5 +285,13 @@ CASE
 COMMIT TRANSACTION
 END TRY
 BEGIN CATCH
+-- We need to Rollback our transaction if it did not work.
 ROLLBACK TRANSACTION
+SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
