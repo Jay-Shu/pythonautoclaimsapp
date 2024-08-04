@@ -61,6 +61,21 @@ USE PACA
   We need to create a signing certificate for our Stored Procedures.
   Also, HTTP Endpoints are going to be phased out in the long-term
   it is recommended AGAINST using such Endpoints.
+  
+  BEST PRACTICES OF STORED PROCEDURES:
+    Use the SET NOCOUNT ON statement as the first statement in the body of the procedure. That is, place it just after the AS keyword. This turns off messages that SQL Server sends back to the client after any SELECT, INSERT, UPDATE, MERGE, and DELETE statements are executed. This keeps the output generated to a minimum for clarity. There is no measurable performance benefit however on today's hardware. For information, see SET NOCOUNT (Transact-SQL).
+    Use schema names when creating or referencing database objects in the procedure. It takes less processing time for the Database Engine to resolve object names if it doesn't have to search multiple schemas. It also prevents permission and access problems caused by a user's default schema being assigned when objects are created without specifying the schema.
+    Avoid wrapping functions around columns specified in the WHERE and JOIN clauses. Doing so makes the columns non-deterministic and prevents the query processor from using indexes.
+    Avoid using scalar functions in SELECT statements that return many rows of data. Because the scalar function must be applied to every row, the resulting behavior is like row-based processing and degrades performance.
+    Avoid the use of SELECT *. Instead, specify the required column names. This can prevent some Database Engine errors that stop procedure execution. For example, a SELECT * statement that returns data from a 12 column table and then inserts that data into a 12 column temporary table succeeds until the number or order of columns in either table is changed.
+    Avoid processing or returning too much data. Narrow the results as early as possible in the procedure code so that any subsequent operations performed by the procedure are done using the smallest data set possible. Send just the essential data to the client application. It is more efficient than sending extra data across the network and forcing the client application to work through unnecessarily large result sets.
+    Use explicit transactions by using BEGIN/COMMIT TRANSACTION and keep transactions as short as possible. Longer transactions mean longer record locking and a greater potential for deadlocking.
+    Use the Transact-SQL TRY...CATCH feature for error handling inside a procedure. TRY...CATCH can encapsulate an entire block of Transact-SQL statements. This not only creates less performance overhead, it also makes error reporting more accurate with significantly less programming.
+    Use the DEFAULT keyword on all table columns that are referenced by CREATE TABLE or ALTER TABLE Transact-SQL statements in the body of the procedure. This prevents passing NULL to columns that don't allow null values.
+    Use NULL or NOT NULL for each column in a temporary table. The ANSI_DFLT_ON and ANSI_DFLT_OFF options control the way the Database Engine assigns the NULL or NOT NULL attributes to columns when these attributes aren't specified in a CREATE TABLE or ALTER TABLE statement. If a connection executes a procedure with different settings for these options than the connection that created the procedure, the columns of the table created for the second connection can have different nullability and exhibit different behavior. If NULL or NOT NULL is explicitly stated for each column, the temporary tables are created by using the same nullability for all connections that execute the procedure.
+    Use modification statements that convert nulls and include logic that eliminates rows with null values from queries. Be aware that in Transact-SQL, NULL isn't an empty or "nothing" value. It is a placeholder for an unknown value and can cause unexpected behavior, especially when querying for result sets or using AGGREGATE functions.
+    Use the UNION ALL operator instead of the UNION or OR operators, unless there is a specific need for distinct values. The UNION ALL operator requires less processing overhead because duplicates aren't filtered out of the result set.
+
 */
 
 
@@ -344,6 +359,59 @@ v.VEHICLE_VEHICLE_USE,
 v.VEHICLE_ANNUAL_MILEAGE
 FROM paca.ACCOUNTS a
 INNER JOIN paca.VEHICLES v on v.VEHICLE_ACCOUNT_NUM
+WHERE ACCOUNT_NUM = @accountNum
+END TRY
+BEGIN CATCH
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE paca.getAccounts_v5
+/*
+  This is for displaying the Homes with a specific account.
+*/
+@accountNum NVARCHAR(11)
+AS
+BEGIN TRY
+SELECT a.ACCOUNT_CITY,
+a.ACCOUNT_DATE_RENEWAL,
+a.ACCOUNT_DATE_START,
+a.ACCOUNT_FIRST_NAME,
+a.ACCOUNT_HONORIFICS,
+a.ACCOUNT_ID,
+a.ACCOUNT_LAST_NAME,
+a.ACCOUNT_NUM,
+a.ACCOUNT_PO_BOX,
+a.ACCOUNT_STATE,
+a.ACCOUNT_STREET_ADD_1,
+a.ACCOUNT_STREET_ADD_2,
+a.ACCOUNT_SUFFIX,
+a.ACCOUNT_TYPE,
+a.ACCOUNT_ZIP,
+h.HOMES_ADDRESS,
+h.HOMES_PREMIUM,
+h.HOMES_ADDRESS,
+h.HOMES_SEC1_DW,
+h.HOMES_SEC1_DWEX,
+h.HOMES_SEC1_PER_PROP,
+h.HOMES_SEC1_LOU,
+h.HOMES_SEC1_FD_SC,
+h.HOMES_SEC1_SI,
+h.HOMES_SEC1_BU_SD,
+h.HOMES_SEC2_PL,
+h.HOMES_SEC2_DPO,
+h.HOMES_SEC2_MPO
+FROM paca.ACCOUNTS a
+INNER JOIN paca.HOMES h on h.HOMES_ACCOUNT_NUM = a.ACCOUNT_NUM
 WHERE ACCOUNT_NUM = @accountNum
 END TRY
 BEGIN CATCH

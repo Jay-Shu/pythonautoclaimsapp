@@ -57,3 +57,228 @@
 
 USE PACA
 
+CREATE PROCEDURE updateAccount_v1
+@accountNum NVARCHAR(11),
+@accountItemToUpdate NVARCHAR(MAX),
+@accountItemVal NVARCHAR(128)
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+/*
+ACCOUNT_HONORIFICS	NVARCHAR(16) NULL,
+ACCOUNT_FIRST_NAME 	NVARCHAR(128) NOT NULL,
+ACCOUNT_LAST_NAME 	NVARCHAR(128) NOT NULL,
+ACCOUNT_SUFFIX		NVARCHAR(16) NULL,
+ACCOUNT_STREET_ADD_1 NVARCHAR(128) NOT NULL,
+ACCOUNT_STREET_ADD_2 NVARCHAR(128) NULL,
+ACCOUNT_CITY		NVARCHAR(128) NOT NULL,
+ACCOUNT_STATE	NVARCHAR(16) NOT NULL,
+ACCOUNT_ZIP		INT NOT NULL,
+ACCOUNT_PO_BOX	NVARCHAR(128) NULL,
+ACCOUNT_DATE_START	DATETIME NOT NULL,
+ACCOUNT_DATE_RENEWAL DATETIME NOT NULL,
+ACCOUNT_TYPE	NVARCHAR(64) NOT NULL,
+*/
+
+CASE
+    WHEN @accountItemToUpdate = N'ACCOUNT_HONORIFICS'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_FIRST_NAME'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_LAST_NAME'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_SUFFIX'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_STREET_ADD_1'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_STREET_ADD_2'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_CITY'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_STATE'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_ZIP'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_PO_BOX'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_DATE_START'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_DATE_RENEWAL'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+    WHEN @accountItemToUpdate = N'ACCOUNT_TYPE'
+    THEN
+    BEGIN TRY
+--UPDATE paca.ACCOUNTS
+--SET
+    END TRY
+    BEGIN CATCH
+        SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+    END CATCH
+
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+END CATCH
