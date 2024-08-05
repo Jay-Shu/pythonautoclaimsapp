@@ -31,6 +31,7 @@
 		2024-07-31: Correctly Commented out Queue Blocks.
 		2024-07-31: Removed DEFAULT_SCHEMA keyword from CREATE LOGIN. This is invalid and needs to
 			be utilized through ALTER USER.
+		2024-08-04: SET ANSI_NULLS ON added.
 		
 
     TO DO (Requested):
@@ -136,6 +137,11 @@ GO
 			whatever Password Policy is used by the Domain.
 
 **/
+
+USE PACA
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+SET ANSI_NULLS ON
+GO
 
 USE PACA
 CREATE LOGIN pacauser WITH PASSWORD = N'pacauser',

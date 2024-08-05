@@ -64,12 +64,14 @@ CREATE PROCEDURE updateAccount_v1
 AS
 BEGIN TRY
 BEGIN TRANSACTION
+
 /*
 
 @accountNum: This is the Account Number Associated with the Client's Account.
 @accountItemToUpdate: This is the Item we are updating with the Account
     itself. Vehicles and Homes will not be updated here.
 @accountItemVal: This is the Value Actual we are using to update the Account.
+
 */
 
 CASE
@@ -237,7 +239,7 @@ CASE
     THEN
     BEGIN TRY
         UPDATE paca.ACCOUNTS
-        SET ACCOUNT_DATE_START = CAST(@accountItemVal AS DATETIME)
+        SET ACCOUNT_DATE_START = CAST(@accountItemVal AS DATETIME), ACCOUNT_DATE_RENEWAL = DATEADD(YY,1,CAST(@accountItemVal AS DATETIME)
         WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
@@ -269,7 +271,7 @@ CASE
     THEN
     BEGIN TRY
         UPDATE paca.ACCOUNTS
-        SET ACCOUNT_TYPE = CAST(@accountItemVal AS INT)
+        SET ACCOUNT_TYPE = CAST(@accountItemVal AS NVARCHAR(64))
         WHERE ACCOUNT_NUM = @accountNum
     END TRY
     BEGIN CATCH
@@ -295,3 +297,6 @@ SELECT
         ,ERROR_LINE() AS ErrorLine
         ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
+
+RETURN;
+GO
