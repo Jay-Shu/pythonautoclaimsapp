@@ -32,7 +32,17 @@
 		EXECUTING PROPERLY.
 
     Scalar Variables:
-        @name : Description
+        @firstName First Name of the Account Holder.
+        @lastName Last Name of the Account Holder.
+        @intent: Our mode of searching; 1 = Equal to for First Name and Last Name,
+          2 = First Name Ends With and Last Name Equal To.
+          3 = First Name Starts With and Last Name Equal To.
+          4 = Last Name Ends  With and First Name Equal To.
+          5 = Last Name Starts With and First Name Equal To.
+          Contains is not being considered at this time. The table will be full scans due to their small size regardless of the Index.
+        @accountNum: Account Number of the Client Account.
+        @homeAddress: Home Address of the Insured Home.
+
 		
 	Citations:
 		1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16

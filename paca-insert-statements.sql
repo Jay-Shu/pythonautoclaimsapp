@@ -31,7 +31,28 @@
 		EXECUTING PROPERLY.
 
     Scalar Variables:
-        @name : Description
+        @acctHonorifics: Account Holder's Honorofics. Null by default.
+        @acctFirstName: Account Holder's First Name.
+        @acctLastName: Account Holder's Last Name.
+        @acctSuffix: Account Holder's Suffix. Null by default.
+        @acctStreetAdd1: Account Holder's Address Line 1.
+        @acctStreetAdd2: Account Holder's Address Line 2.
+        @acctCity: Account Holder's City.
+        @acctState: Account Holder's State.
+        @acctZip: Account Holder's Zip Code.
+        @acctPOBox: Account Holder's PO Box.
+        @acctDateStart: Account Holder's Account Inception Date.
+        @acctType: Account Holder's Account Type.
+        @vehicleAcctNum: Account Number associated with this Vehicle.
+        @vehicleVin: VIN Number of the Vehicle.
+        @vehicleYear: Year of the Vehicle.
+        @vehicleMake: Make of the Vehicle.
+        @vehicleModel: Model of the Vehicle.
+        @vehiclePremium: Premium cost for the Vehicle.
+        @vehicleAnnualMileage: Annual Mileage estimate of the Vehicle.
+        @vehicleVehicleUse: Vehicle use cases.
+        @vehicleAddress1Garaged: Vehicle Physical Location. Where it is housed at when not in operation.
+        @vehicleAddress2Garaged: Vehicle Physical Location 2. Where it is housed at when not in operation if not a house. Null by default.
 		
 	Citations:
 		1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16

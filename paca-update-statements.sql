@@ -32,7 +32,11 @@
 		EXECUTING PROPERLY.
 
     Scalar Variables:
-        @name : Description
+        @accountNum: Account Number of the Client Account.
+        @accountItemToUpdate: What we are needing to update in the given row. Possible Values are the column names themselves.
+            Any value provided outside of this will be handled on the Python end.
+        @accountItemVal: The value actual we are setting the column to.
+
 		
 	Citations:
 		1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
