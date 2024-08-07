@@ -9,8 +9,11 @@
 
     Changelog:
         2024-08-02: Staging for Certificates to be added to Stored Procedures
-          per best practices.
-		
+          per best practices. (Researching further).
+        2024-08-05: Reseolved Syntax issues with Stored Procedures.
+        2024-08-05: Remove USE clause, because CREATE PROCEDURE (T-SQL)
+          does not allow for statements above it.
+
     TO DO (Requested):
 		N/A - No current modification requests pending.
 	
@@ -53,6 +56,7 @@
     6. CASE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/case-transact-sql?view=sql-server-ver16
     7. IF...ELSE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/if-else-transact-sql?view=sql-server-ver16
     8. Tutorial: Signing Stored Procedures With a Certificate, https://learn.microsoft.com/en-us/sql/relational-databases/tutorial-signing-stored-procedures-with-a-certificate?view=sql-server-ver16
+    9. Slash Star (Block Comment), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql?view=sql-server-ver16
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
@@ -65,7 +69,7 @@
 
 **/
 
-USE PACA
+--USE PACA
 
 /*
   We need to create a signing certificate for our Stored Procedures.
