@@ -16,6 +16,7 @@
         2024-08-05: IF...ELSE (T-SQL), replaced the USE Clauses.
         2024-08-06: Added Homes Update Statements.
         2024-08-06: Removed Default set of Citations that were not applicable.
+        2024-08-06: Added missing Schema for any applicable Stored Procedures.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -61,7 +62,7 @@
             for the application to be running these statements.
     These will need to be transitioned into Stored Procedures. This is necessary for
       exposing an external Web service.
-      
+
   BEST PRACTICES OF STORED PROCEDURES:
     Use the SET NOCOUNT ON statement as the first statement in the body of the procedure. That is, place it just after the AS keyword. This turns off messages that SQL Server sends back to the client after any SELECT, INSERT, UPDATE, MERGE, and DELETE statements are executed. This keeps the output generated to a minimum for clarity. There is no measurable performance benefit however on today's hardware. For information, see SET NOCOUNT (Transact-SQL).
     Use schema names when creating or referencing database objects in the procedure. It takes less processing time for the Database Engine to resolve object names if it doesn't have to search multiple schemas. It also prevents permission and access problems caused by a user's default schema being assigned when objects are created without specifying the schema.
@@ -79,7 +80,7 @@
 
 --USE PACA
 
-CREATE PROCEDURE updateAccount_v1
+CREATE PROCEDURE paca.updateAccount_v1
 @accountNum NVARCHAR(11),
 @accountItemToUpdate NVARCHAR(MAX),
 @accountItemVal NVARCHAR(128)

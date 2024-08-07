@@ -9,6 +9,8 @@
 
     Changelog:
         2024-08-06: Removed citations that were no longer applicable.
+        2024-08-06: Added Stored Procedures; addAccount_v1, addVehicle_v1, addVehicleClaim_v1.
+        2024-08-07: Added Stored Procedure: addHome_v1.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -17,6 +19,7 @@
 		Policies Enumerations. - DONE
 		Bundle Enumeration for Car and Home. For non-goal. - DONE
     Plan for additional tables; such as CLAIMS
+    Need to add Stored Procedure for Homes Inserts.
 		
     DISCLAIMER:
         After receipt, this Script is "as-is". Additional modifications past the base are at 100.00 per hour.
@@ -54,6 +57,17 @@
         @vehicleVehicleUse: Vehicle use cases.
         @vehicleAddress1Garaged: Vehicle Physical Location. Where it is housed at when not in operation.
         @vehicleAddress2Garaged: Vehicle Physical Location 2. Where it is housed at when not in operation if not a house. Null by default.
+        @vehicleClaimAccountNum: Account Number associated with the
+        @vehicleClaimVin: Vehicle Claim Associated VIN Number
+        @vehicleClaimTitle: Vehicle Title, What happened (Subject)?
+        @vehicleClaimDescription: Vehicle Claim Description, expansion of Subject.
+        @vehicleClaimClaimType: Vehicle Claim Type
+        @vehicleClaimExternalCaseNumber: Vehicle Claim External Number for; Tow, Windshield, etc.
+        @vehicleClaimDeductible: Vehicle Claim Minimum Deductible.
+        @vehicleClaimTotalEstimate: Vehicle Claim Estimate
+        @vehicleClaimStatus: Vehicle Claim Status
+        @vehicleClaimMedia: Vehicle Claim Media Available
+        @vehicleClaimTowCompany Vehicle Claim Tow Company, if used.
 		
 	Citations:
 		1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
@@ -93,7 +107,7 @@
 --USE PACA
 
 --Creation of a new account
-CREATE PROCEDURE addAccount_v1
+CREATE PROCEDURE paca.addAccount_v1
 @acctHonorifics NVARCHAR(16),
 @acctFirstName NVARCHAR(128),
 @acctLastName NVARCHAR(128),
@@ -127,7 +141,7 @@ ACCOUNT_TYPE NVARCHAR(64)
 
 BEGIN TRY
 BEGIN TRANSACTION
-INSERT INTO ACCOUNTS VALUES (@acctHonorifics,@acctFirstName,@acctLastName,@acctSuffix,@acctStreetAdd1,@acctStreetAdd2,@acctCity,@acctState,@acctZip,@acctPOBox,@acctDateStart,DATEADD(YY,1,@acctDateStart),@acctType)
+INSERT INTO ACCOUNTS VALUES (@acctHonorifics,@acctFirstName,@acctLastName,@acctSuffix,@acctStreetAdd1,@acctStreetAdd2,@acctCity,@acctState,@acctZip,@acctPOBox,@acctDateStart,DATEADD(YY,1,@acctDateStart),@acctType);
 COMMIT TRANSACTION
 END TRY
 BEGIN CATCH
@@ -146,7 +160,7 @@ RETURN;
 
 GO
 
-CREATE PROCEDURE addVehicle_v1
+CREATE PROCEDURE paca.addVehicle_v1
 @vehicleAcctNum NVARCHAR(11),
 @vehicleVin NVARCHAR(32),
 @vehicleYear DATETIME,
@@ -175,7 +189,6 @@ VEHICLE_ADDRESS2_GARAGED NVARCHAR(128) NULL
 */
 BEGIN TRY
 BEGIN TRANSACTION
-  BEGIN TRY
   INSERT INTO VEHICLES VALUES (@vehicleAcctNum,
 @vehicleVin,
 @vehicleYear,
@@ -187,17 +200,6 @@ BEGIN TRANSACTION
 @vehicleAddress1Garaged,
 @vehicleAddress2Garaged)
   COMMIT TRANSACTION
-  END TRY
-  BEGIN CATCH
-  ROLLBACK TRANSACTION
-    SELECT 
-     ERROR_NUMBER() AS ErrorNumber
-    ,ERROR_SEVERITY() AS ErrorSeverity
-    ,ERROR_STATE() AS ErrorState
-    ,ERROR_PROCEDURE() AS ErrorProcedure
-    ,ERROR_LINE() AS ErrorLine
-    ,ERROR_MESSAGE() AS ErrorMessage;
-  END CATCH
 END TRY
 BEGIN CATCH
 ROLLBACK TRANSACTION
@@ -209,6 +211,126 @@ ROLLBACK TRANSACTION
    ,ERROR_LINE() AS ErrorLine
    ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE paca.addVehicleClaim_v1
+@vehicleClaimAccountNum NVARCHAR(11),
+@vehicleClaimVin NVARCHAR(32),
+@vehicleClaimTitle NVARCHAR(256),
+@vehicleClaimDescription NVARCHAR(MAX),
+@vehicleClaimClaimType INT,
+@vehicleClaimExternalCaseNumber NVARCHAR(32),
+@vehicleClaimDeductible DECIMAL(10,2),
+@vehicleClaimTotalEstimate DECIMAL(10,2),
+@vehicleClaimStatus SMALLINT,
+@vehicleClaimMedia SMALLINT,
+@vehicleClaimTowCompany NVARCHAR(128)
+/*
+  VEHICLE_CLAIMS_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
+	VEHICLE_CLAIMS_VEHICLE_VIN NVARCHAR(32) NOT NULL,
+	VEHICLE_CLAIMS_TITLE NVARCHAR(256) NOT NULL,
+	VEHICLE_CLAIMS_DESCRIPTION NVARCHAR(MAX) NOT NULL,
+	VEHICLE_CLAIMS_CLAIM_TYPE INT NOT NULL,
+	VEHICLE_CLAIMS_EXTERNAL_CASE_NUMBER NVARCHAR(32) NULL,
+	VEHICLE_CLAIMS_DEDUCTIBLE DECIMAL(10,2) NULL,
+	VEHICLE_CLAIMS_TOTAL_ESTIMATE DECIMAL(10,2) NULL,
+	VEHICLE_CLAIMS_STATUS SMALLINT NULL,
+	VEHICLE_CLAIMS_MEDIA SMALLINT NULL,
+	VEHICLE_CLAIMS_TOW_COMPANY NVARCHAR(128) NULL,
+	CONSTRAINT PK_VehicleClaim PRIMARY KEY CLUSTERED 
+*/
+AS
+SET NOCOUNT ON
+BEGIN TRY
+BEGIN TRANSACTION
+INSERT INTO paca.VEHICLE_CLAIMS VALUES (@vehicleClaimAccountNum,
+@vehicleClaimVin,
+@vehicleClaimTitle,
+@vehicleClaimDescription,
+@vehicleClaimClaimType,
+@vehicleClaimExternalCaseNumber,
+@vehicleClaimDeductible,
+@vehicleClaimTotalEstimate,
+@vehicleClaimStatus,
+@vehicleClaimMedia,
+@vehicleClaimTowCompany)
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+  SELECT 
+    ERROR_NUMBER() AS ErrorNumber
+   ,ERROR_SEVERITY() AS ErrorSeverity
+   ,ERROR_STATE() AS ErrorState
+   ,ERROR_PROCEDURE() AS ErrorProcedure
+   ,ERROR_LINE() AS ErrorLine
+   ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE paca.addHome_v1
+@homeAccountNum NVARCHAR(11),
+@homeAccountPremium DECIMAL(10,2),
+@homeAddress NVARCHAR(128),
+@homeSec1DW DECIMAL(10,2),
+@homeSec1DWEX DECIMAL(10,2),
+@homeSec1PP DECIMAL(10,2),
+@homeSec1LOU DECIMAL(10,2),
+@homeSec1FDSC DECIMAL(10,2),
+@homeSec1SI DECIMAL(10,2),
+@homeSec2PL DECIMAL(12,2),
+@homeSec2DPO DECIMAL(12,2),
+@homeSec2MPO DECIMAL(12,2)
+/*
+HOMES_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
+HOMES_PREMIUM DECIMAL(10,2) NOT NULL,
+HOMES_ADDRESS NVARCHAR(128) NOT NULL,
+HOMES_SEC1_DW DECIMAL(10,2) NULL,
+HOMES_SEC1_DWEX DECIMAL(10,2) NULL,
+HOMES_SEC1_PER_PROP DECIMAL(10,2) NULL,
+HOMES_SEC1_LOU DECIMAL(10,2) NULL,
+HOMES_SEC1_FD_SC DECIMAL(10,2) NULL,
+HOMES_SEC1_SI DECIMAL(10,2) NULL,
+HOMES_SEC1_BU_SD DECIMAL(12,2) NULL,
+HOMES_SEC2_PL DECIMAL(12,2) NULL,
+HOMES_SEC2_DPO DECIMAL(12,2) NULL,
+HOMES_SEC2_MPO DECIMAL(12,2) NULL,
+*/
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+INSERT INTO HOMES VALUES (@homeAccountNum,
+@homeAccountPremium,
+@homeAddress,
+@homeSec1DW,
+@homeSec1DWEX,
+@homeSec1PP,
+@homeSec1LOU,
+@homeSec1FDSC,
+@homeSec1SI,
+@homeSec2PL,
+@homeSec2DPO,
+@homeSec2MPO
+)
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+  SELECT 
+    ERROR_NUMBER() AS ErrorNumber
+   ,ERROR_SEVERITY() AS ErrorSeverity
+   ,ERROR_STATE() AS ErrorState
+   ,ERROR_PROCEDURE() AS ErrorProcedure
+   ,ERROR_LINE() AS ErrorLine
+   ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
 RETURN;
 
 GO
