@@ -32,6 +32,9 @@
 		2024-07-31: Removed DEFAULT_SCHEMA keyword from CREATE LOGIN. This is invalid and needs to
 			be utilized through ALTER USER.
 		2024-08-04: SET ANSI_NULLS ON added.
+		2024-08-07: SET RECOVERY MODEL FULL; Added and split original SET Clauses.
+		2024-08-07: SET ARITHABORT ON; and SET TRUSTWORTHY OFF;
+		2024-08-07: SET ALLOW_SNAPSHOT_ISOLATION ON; SET CONCAT_NULL_YIELDS_NULL ON; SET PARAMETERIZATION ON; SET PAGE_VERIFY CHECKSUM;
 		
 
     TO DO (Requested):
@@ -77,6 +80,17 @@
 		17. CREATE QUEUE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-queue-transact-sql?view=sql-server-ver16
 		18. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
 		19. Slash Star (Block Comment), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql?view=sql-server-ver16
+		20. View or change the recovery model of a database (SQL Server), https://learn.microsoft.com/en-us/sql/relational-databases/backup-restore/view-or-change-the-recovery-model-of-a-database-sql-server?view=sql-server-ver16
+		21. Recovery models (SQL Server), https://learn.microsoft.com/en-us/sql/relational-databases/backup-restore/recovery-models-sql-server?view=sql-server-ver16
+		22. TRUSTWORTHY database property, https://learn.microsoft.com/en-us/sql/relational-databases/security/trustworthy-database-property?view=sql-server-ver16
+		23. GRANT Database Principal Permissions (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/grant-database-principal-permissions-transact-sql?view=sql-server-ver16
+		24. Snapshot Isolation in SQL Server, https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server
+		25. SET ANSI_NULLS (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/set-ansi-nulls-transact-sql?view=sql-server-ver16
+		26. In SQL Server, what does "SET ANSI_NULLS ON" mean?, https://stackoverflow.com/questions/9766717/in-sql-server-what-does-set-ansi-nulls-on-mean
+		27. SET CONCAT_NULL_YIELDS_NULL (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/set-concat-null-yields-null-transact-sql?view=sql-server-ver16
+		28. SET PARAMETERIZATION (Transact-SQL), https://learn.microsoft.com/en-us/sql/relational-databases/performance/specify-query-parameterization-behavior-by-using-plan-guides?view=sql-server-ver16
+		29. Set the page_verify database option to checksum,
+
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
@@ -140,8 +154,18 @@ GO
 **/
 
 USE PACA
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED
-SET ANSI_NULLS ON
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SET ANSI_NULLS ON;
+SET ARITHABORT ON;
+SET TRUSTWORTHY OFF; --THIS IS RECOMMENDED TO BE OFF TO PREVENT MALICIOUS ASSEMBLIES.
+SET ALLOW_SNAPSHOT_ISOLATION ON;
+SET ANSI_NULLS ON; -- Microsoft Documentation, and referenced Citation above.
+SET CONCAT_NULL_YIELDS_NULL OFF;
+SET PAGE_VERIFY CHECKSUM; --Microsoft Best Practices Recommendation.
+GO
+
+ALTER DATABASE [PACA]
+SET RECOVERY FULL;
 GO
 
 USE PACA
@@ -149,7 +173,7 @@ CREATE LOGIN pacauser WITH PASSWORD = N'pacauser',
 	DEFAULT_DATABASE = PACA,
 	--DEFAULT_SCHEMA = paca, Invalid Keyword for CREATE LOGIN.
 	CHECK_EXPIRATION = OFF,
-	CHECK_POLICY = OFF
+	CHECK_POLICY = OFF;
 GO
 
 /**
@@ -158,7 +182,7 @@ GO
 
 **/
 
-CREATE USER pacauser FOR LOGIN pacauser
+CREATE USER pacauser FOR LOGIN pacauser;
 GO
 
 /**
@@ -168,17 +192,20 @@ GO
 
 **/
 
-CREATE SCHEMA paca AUTHORIZATION pacauser
-GRANT SELECT ON SCHEMA::paca TO contentcomposer;
+CREATE SCHEMA paca AUTHORIZATION pacauser;
+--contentcomposer user will not be a part of the final build.
+--GRANT SELECT ON SCHEMA::paca TO contentcomposer;
 GO
 
 ALTER USER pacauser WITH DEFAULT_SCHEMA = paca;
+GRANT VIEW DEFINITION TO pacauser;
 GO
 
 USE MASTER
 
-GRANT VIEW SERVER STATE TO pacauser
-GRANT CREATE ENDPOINT TO pacauser
+GRANT VIEW SERVER STATE TO pacauser;
+--2024-08-07: No longer pursuing Endpoints as their original use case is no longer supported.
+--GRANT CREATE ENDPOINT TO pacauser
 GO
 
 -- sp_addrolemember and sp_addsrvrolemember have been replaced with ALTER SERVER ROLE.
@@ -189,6 +216,7 @@ ALTER ROLE db_accessadmin ADD MEMBER pacauser
 ALTER ROLE db_backupoperator ADD MEMBER pacauser
 ALTER ROLE db_datareader ADD MEMBER pacauser
 ALTER ROLE db_datawriter ADD MEMBER pacauser
+ALTER ROLE db_ddladmin ADD MEMBER pacauser
 ALTER ROLE db_owner ADD MEMBER pacauser
 ALTER ROLE db_securityadmin ADD MEMBER pacauser
 GO
@@ -413,7 +441,7 @@ CREATE TABLE paca.HOMES
 	HOMES_SEC1_PER_PROP DECIMAL(10,2) NULL,
 	HOMES_SEC1_LOU DECIMAL(10,2) NULL,
 	HOMES_SEC1_FD_SC DECIMAL(10,2) NULL,
-	HOMES_SEC1_SI DECIMAL(10,2) NULL,
+	HOMES_SEC1_SL DECIMAL(10,2) NULL,
 	HOMES_SEC1_BU_SD DECIMAL(12,2) NULL,
 	HOMES_SEC2_PL DECIMAL(12,2) NULL,
 	HOMES_SEC2_DPO DECIMAL(12,2) NULL,

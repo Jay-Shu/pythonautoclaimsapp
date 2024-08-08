@@ -11,6 +11,8 @@
         2024-08-06: Removed citations that were no longer applicable.
         2024-08-06: Added Stored Procedures; addAccount_v1, addVehicle_v1, addVehicleClaim_v1.
         2024-08-07: Added Stored Procedure: addHome_v1.
+        2024-08-07: Added SET NOCOUNT ON lines missing, these must be set immediately following
+          the AS clause.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -57,17 +59,30 @@
         @vehicleVehicleUse: Vehicle use cases.
         @vehicleAddress1Garaged: Vehicle Physical Location. Where it is housed at when not in operation.
         @vehicleAddress2Garaged: Vehicle Physical Location 2. Where it is housed at when not in operation if not a house. Null by default.
-        @vehicleClaimAccountNum: Account Number associated with the
-        @vehicleClaimVin: Vehicle Claim Associated VIN Number
+        @vehicleClaimAccountNum: Account Number associated with the Vehicle Claim.
+        @vehicleClaimVin: Vehicle Claim Associated VIN Number.
         @vehicleClaimTitle: Vehicle Title, What happened (Subject)?
         @vehicleClaimDescription: Vehicle Claim Description, expansion of Subject.
-        @vehicleClaimClaimType: Vehicle Claim Type
+        @vehicleClaimClaimType: Vehicle Claim Type.
         @vehicleClaimExternalCaseNumber: Vehicle Claim External Number for; Tow, Windshield, etc.
         @vehicleClaimDeductible: Vehicle Claim Minimum Deductible.
-        @vehicleClaimTotalEstimate: Vehicle Claim Estimate
-        @vehicleClaimStatus: Vehicle Claim Status
-        @vehicleClaimMedia: Vehicle Claim Media Available
+        @vehicleClaimTotalEstimate: Vehicle Claim Estimate.
+        @vehicleClaimStatus: Vehicle Claim Status.
+        @vehicleClaimMedia: Vehicle Claim Media Available.
         @vehicleClaimTowCompany Vehicle Claim Tow Company, if used.
+        @homeAccountNum: Account Number associated with the Home.
+        @homeAccountPremium: Premium for the Home.
+        @homeAddress: Address for the Home.
+        @homeSec1DW: Home, Section 1, Dwelling.
+        @homeSec1DWEX: Home, Section 1, Dwelling extension up to.
+        @homeSec1PP: Home, Section 1, Personal Property.
+        @homeSec1LOU: Home, Section 1 Loss of Use.
+        @homeSec1FDSC: Home, Section 1, Fire Department Service Charge.
+        @homeSec1SI: Home, Section 1, Service Line Coverage.
+        @homeSec1BUSD: Home, Section 1, Back-up of Sewer or Drain 5%.
+        @homeSec2PL: Home, Section 2, Personal Liability (Each Occurrence).
+        @homeSec2DPO: Home, Section 2, Damage to Property of Others. 
+        @homeSec2MPO: Home, Section 2, Medical Payments to Others (Each Person).
 		
 	Citations:
 		1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
@@ -122,7 +137,7 @@ CREATE PROCEDURE paca.addAccount_v1
 --@acctDateRenewal DATETIME, Not needed. Because this is a calculated value.
 @acctType NVARCHAR(64)
 AS
-
+SET NOCOUNT ON
 /*
 ACCOUNT_HONORIFICS	NVARCHAR(16) NULL,
 ACCOUNT_FIRST_NAME 	NVARCHAR(128) NOT NULL,
@@ -283,7 +298,8 @@ CREATE PROCEDURE paca.addHome_v1
 @homeSec1PP DECIMAL(10,2),
 @homeSec1LOU DECIMAL(10,2),
 @homeSec1FDSC DECIMAL(10,2),
-@homeSec1SI DECIMAL(10,2),
+@homeSec1SL DECIMAL(10,2),
+@homeSec1BUSD DECIMAL(12,2),
 @homeSec2PL DECIMAL(12,2),
 @homeSec2DPO DECIMAL(12,2),
 @homeSec2MPO DECIMAL(12,2)
@@ -296,13 +312,14 @@ HOMES_SEC1_DWEX DECIMAL(10,2) NULL,
 HOMES_SEC1_PER_PROP DECIMAL(10,2) NULL,
 HOMES_SEC1_LOU DECIMAL(10,2) NULL,
 HOMES_SEC1_FD_SC DECIMAL(10,2) NULL,
-HOMES_SEC1_SI DECIMAL(10,2) NULL,
+HOMES_SEC1_SL DECIMAL(10,2) NULL,
 HOMES_SEC1_BU_SD DECIMAL(12,2) NULL,
 HOMES_SEC2_PL DECIMAL(12,2) NULL,
 HOMES_SEC2_DPO DECIMAL(12,2) NULL,
 HOMES_SEC2_MPO DECIMAL(12,2) NULL,
 */
 AS
+SET NOCOUNT ON
 BEGIN TRY
 BEGIN TRANSACTION
 INSERT INTO HOMES VALUES (@homeAccountNum,
@@ -313,7 +330,8 @@ INSERT INTO HOMES VALUES (@homeAccountNum,
 @homeSec1PP,
 @homeSec1LOU,
 @homeSec1FDSC,
-@homeSec1SI,
+@homeSec1SL,
+@homeSec1BUSD,
 @homeSec2PL,
 @homeSec2DPO,
 @homeSec2MPO

@@ -8,7 +8,7 @@
     Rate: 100.00 (Based on 2019*)
 
     Changelog:
-        2024-08-06: 
+        2024-08-07: removeAccount_v1, removeVehicle_v1, removePolicy_v1, removeHome_v1
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -35,7 +35,7 @@
 
 		
 	Citations:
-		1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
+		    1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
         2. NO COUNT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/set-nocount-transact-sql?view=sql-server-ver16
         3. ERROR_MESSAGE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/functions/error-message-transact-sql?view=sql-server-ver16
         4. CASE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/case-transact-sql?view=sql-server-ver16
@@ -64,3 +64,157 @@
     Use modification statements that convert nulls and include logic that eliminates rows with null values from queries. Be aware that in Transact-SQL, NULL isn't an empty or "nothing" value. It is a placeholder for an unknown value and can cause unexpected behavior, especially when querying for result sets or using AGGREGATE functions.
     Use the UNION ALL operator instead of the UNION or OR operators, unless there is a specific need for distinct values. The UNION ALL operator requires less processing overhead because duplicates aren't filtered out of the result set.
 **/
+
+CREATE PROCEDURE removeAccount_v1
+@accountNum NVARCHAR(11)
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+DELETE FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE removeHome_v1
+@accountNum NVARCHAR(11),
+@homeID INT
+
+/*
+  For the next release this needs to be updated to use a unique identifier
+*/
+
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+DELETE FROM paca.HOMES WHERE HOMES_ACCOUNT_NUM = @accountNum
+AND HOMES_ID = @homeID
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE removeVehicle_v1
+@accountNum NVARCHAR(11),
+@vehicleVin NVARCHAR(32)
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+DELETE FROM paca.VEHICLES
+WHERE VEHICLE_ACCOUNT_NUM = @accountNum
+AND VEHICLE_VIN = @vehicleVin
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE removePolicy_v1
+@policyIdActual NVARCHAR(11)
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+DELETE FROM paca.VEHICLES
+WHERE POLICY_ID_ACTUAL = @policyIdActual
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+
+CREATE PROCEDURE removeVehicleCoverages_v1
+@accountNum NVARCHAR(11)
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+DELETE FROM paca.VEHICLE_COVERAGES
+WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @accountNum
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE removeVehicleClaims_v1
+@accountNum NVARCHAR(11),
+@internalCaseNum NVARCHAR(11)
+AS
+BEGIN TRY
+BEGIN TRANSACTION
+DELETE FROM paca.VEHICLE_CLAIMS
+WHERE VEHICLE_CLAIMS_ACCOUNT_NUM = @accountNum
+AND VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER = @internalCaseNum
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
