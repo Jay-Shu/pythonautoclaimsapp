@@ -36,6 +36,7 @@
 		2024-08-07: SET ARITHABORT ON; and SET TRUSTWORTHY OFF;
 		2024-08-07: SET ALLOW_SNAPSHOT_ISOLATION ON; SET CONCAT_NULL_YIELDS_NULL ON; SET PARAMETERIZATION ON; SET PAGE_VERIFY CHECKSUM;
 		2024-08-09: Adding potential usage for database persistence with Flask. Need to test with pyodbc first.
+		2024-08-09: Updated VEHICLE_YEAR from datatype DATETIME to datatype INT. This makes more sense.
 		
 
     TO DO (Requested):
@@ -745,7 +746,7 @@ SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIR
 	VEHICLE_ID INT IDENTITY(1,1) - NOT NEEDED
 	VEHICLE_ACCOUNT_NUM NVARCHAR(11) - @firstinitialLastname, e.g. @jdoe
 	VEHICLE_VIN NVARCHAR(32)
-	VEHICLE_YEAR DATETIME
+	VEHICLE_YEAR INT --Updated to INT, Late Change
 	VEHICLE_MAKE	NVARCHAR(32)
 	VEHICLE_MODEL	NVARCHAR(65)
 	VEHICLE_PREMIUM	DECIMAL(5,2)
@@ -757,7 +758,7 @@ SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIR
 */
 
 --Robert Plant needs a Vehicle
-INSERT INTO paca.VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005',N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',2005,N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
 /*
 
@@ -779,7 +780,7 @@ INSERT INTO paca.VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005',N'Hyundai
 */
 
 --Jimmy Page needs a Vehicle and a Home.
-INSERT INTO paca.VEHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',N'2011',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',2011,N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
 INSERT INTO paca.HOMES VALUES (@jpage,1374.28,N'1348 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
@@ -789,7 +790,7 @@ INSERT INTO paca.HOMES VALUES (@jbonham,1374.28,N'1350 Zeppelin Ct., Kansas City
 --John Paul Jones needs a Home and a Vehicle
 INSERT INTO paca.HOMES VALUES (@jpauljones,1374.28,N'1352 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
-INSERT INTO paca.VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',N'2011',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',2011,N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 END TRY
 BEGIN CATCH
 RAISERROR(N'Unable to perform Vehicles and Homes inserts.',20,-1)
@@ -848,6 +849,8 @@ BEGIN TRY
 	Declarations are exclusive to their GO blocks. As each GO represents a "commit."
 	Psuedo-Code:
 		rplant,jpage,jbonham,jpauljones,vehicle_count
+		ACCOUNT_NUM
+		INSERT INTO paca.VEHICLE_COVERAGES
 		
 */
 
@@ -857,15 +860,15 @@ DECLARE @rplant NVARCHAR(11),
 @jpauljones NVARCHAR(11),
 @vehicle_count int = 0;
 
+--Moved John Paul Jones up, so that this section makes more sense.
 SET @rplant = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Robert' AND ACCOUNT_LAST_NAME = N'Plant');
 SET @jpage = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'Jimmy' AND ACCOUNT_LAST_NAME = N'Page');
+SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
 
 /*
 John Bonham is not needed for this portion of our test data. He does not have a Car insurance policy.
 @jbonham = (SELECT TOP 1 ACCOUNT_NUM FROM ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John' AND ACCOUNT_LAST_NAME = N'Bonham'),
 */
-
-SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIRST_NAME = N'John Paul' AND ACCOUNT_LAST_NAME = N'Jones');
 
 SET @vehicle_count += 1; -- 1, 0 + 1
 
