@@ -1,18 +1,15 @@
 /**
-	Name of Script: paca-insert-statements.sql
+	Name of Script: paca-stored-procedure-testing.sql
     Author: Jacob Shuster
     Role: Consultant - 1099
     Umbrella Company: N/A
-    Creation Date: 2024-08-04
+    Creation Date: 2024-08-08
     Script Cost: N/A
     Rate: 100.00 (Based on 2019*)
 
     Changelog:
-        2024-08-06: Removed citations that were no longer applicable.
-        2024-08-06: Added Stored Procedures; addAccount_v1, addVehicle_v1, addVehicleClaim_v1.
-        2024-08-07: Added Stored Procedure: addHome_v1.
-        2024-08-07: Added SET NOCOUNT ON lines missing, these must be set immediately following
-          the AS clause.
+        2024-08-08: Added Select Execute stored procedure statements to the TRY...CATCH Block.
+        2024-08-08: 
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -37,6 +34,16 @@
 		EXECUTING PROPERLY.
 
     Scalar Variables:
+        @firstName First Name of the Account Holder.
+        @lastName Last Name of the Account Holder.
+        @intent: Our mode of searching; 1 = Equal to for First Name and Last Name,
+          2 = First Name Ends With and Last Name Equal To.
+          3 = First Name Starts With and Last Name Equal To.
+          4 = Last Name Ends  With and First Name Equal To.
+          5 = Last Name Starts With and First Name Equal To.
+          Contains is not being considered at this time. The table will be full scans due to their small size regardless of the Index.
+        @accountNum: Account Number of the Client Account.
+        @homeAddress: Home Address of the Insured Home.
         @acctHonorifics: Account Holder's Honorofics. Null by default.
         @acctFirstName: Account Holder's First Name.
         @acctLastName: Account Holder's Last Name.
@@ -119,45 +126,28 @@
     Use the UNION ALL operator instead of the UNION or OR operators, unless there is a specific need for distinct values. The UNION ALL operator requires less processing overhead because duplicates aren't filtered out of the result set.
 **/
 
---USE PACA
-
---Creation of a new account
-CREATE PROCEDURE paca.addAccount_v1
-@acctHonorifics NVARCHAR(16),
-@acctFirstName NVARCHAR(128),
-@acctLastName NVARCHAR(128),
-@acctSuffix NVARCHAR(16),
-@acctStreetAdd1 NVARCHAR(128),
-@acctStreetAdd2 NVARCHAR(128),
-@acctCity NVARCHAR(128),
-@acctState NVARCHAR(16),
-@acctZip INT,
-@acctPOBox NVARCHAR(128),
-@acctDateStart DATETIME,
---@acctDateRenewal DATETIME, Not needed. Because this is a calculated value.
-@acctType NVARCHAR(64)
-AS
-SET NOCOUNT ON
 /*
-ACCOUNT_HONORIFICS	NVARCHAR(16) NULL,
-ACCOUNT_FIRST_NAME 	NVARCHAR(128) NOT NULL,
-ACCOUNT_LAST_NAME 	NVARCHAR(128) NOT NULL,
-ACCOUNT_SUFFIX		NVARCHAR(16) NULL,
-ACCOUNT_STREET_ADD_1 NVARCHAR(128) NOT NULL,
-ACCOUNT_STREET_ADD_2 NVARCHAR(128) NULL,
-ACCOUNT_CITY		NVARCHAR(128) NOT NULL,
-ACCOUNT_STATE	NVARCHAR(16) NOT NULL,
-ACCOUNT_ZIP		INT NOT NULL,
-ACCOUNT_PO_BOX	NVARCHAR(128) NULL,
-ACCOUNT_DATE_START	DATETIME NOT NULL,
-ACCOUNT_DATE_RENEWAL DATETIME NOT NULL,
-ACCOUNT_TYPE NVARCHAR(64)
+
+Select Stored Procedures First.
+
 */
 
+DECLARE @accountNum NVARCHAR(11) = N'ICA00000001',
+@homeAddress NVARCHAR(128) = N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',
+@firstName NVARCHAR(128) = N'Robert',
+@lastName NVARCHAR(128) = N'Plant',
+@intent INT = 1
+
+
 BEGIN TRY
-BEGIN TRANSACTION
-INSERT INTO ACCOUNTS VALUES (@acctHonorifics,@acctFirstName,@acctLastName,@acctSuffix,@acctStreetAdd1,@acctStreetAdd2,@acctCity,@acctState,@acctZip,@acctPOBox,@acctDateStart,DATEADD(YY,1,@acctDateStart),@acctType);
-COMMIT TRANSACTION
+EXEC paca.getHomes_v1
+EXEC paca.getHomes_v2 @firstName,@lastName,@intent
+EXEC paca.getHomes_v3 @accountNum
+EXEC paca.getAccounts_v1
+EXEC paca.getAccounts_v2 @firstName,@lastName,@intent
+EXEC paca.getAccounts_v3 @accountNum
+EXEC paca.getAccounts_v4 @accountNum
+EXEC paca.getAccounts_v5 @accountNum
 END TRY
 BEGIN CATCH
 SELECT 
@@ -167,189 +157,10 @@ SELECT
   ,ERROR_PROCEDURE() AS ErrorProcedure
   ,ERROR_LINE() AS ErrorLine
   ,ERROR_MESSAGE() AS ErrorMessage;
-
-ROLLBACK TRANSACTION;
 END CATCH
-
-RETURN;
 
 GO
 
-CREATE PROCEDURE paca.addVehicle_v1
-@vehicleAcctNum NVARCHAR(11),
-@vehicleVin NVARCHAR(32),
-@vehicleYear DATETIME,
-@vehicleMake NVARCHAR(32),
-@vehicleModel NVARCHAR(65),
-@vehiclePremium DECIMAL(5,2),
-@vehicleAnnualMileage INT,
-@vehicleVehicleUse NVARCHAR(64),
-@vehicleAddress1Garaged NVARCHAR(128),
-@vehicleAddress2Garaged NVARCHAR(128)
-AS
-SET NOCOUNT ON
 /*
-
-VEHICLE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
-VEHICLE_VIN NVARCHAR(32) NOT NULL,
-VEHICLE_YEAR DATETIME NOT NULL,
-VEHICLE_MAKE	NVARCHAR(32) NOT NULL,
-VEHICLE_MODEL	NVARCHAR(65) NOT NULL,
-VEHICLE_PREMIUM	DECIMAL(5,2) NOT NULL,
-VEHICLE_ANNUAL_MILEAGE INT NULL,
-VEHICLE_VEHICLE_USE	NVARCHAR(64) NOT NULL,
-VEHICLE_ADDRESS1_GARAGED NVARCHAR(128) NOT NULL,
-VEHICLE_ADDRESS2_GARAGED NVARCHAR(128) NULL
-
+    Next we need to do the update stored procedures
 */
-BEGIN TRY
-BEGIN TRANSACTION
-  INSERT INTO VEHICLES VALUES (@vehicleAcctNum,
-@vehicleVin,
-@vehicleYear,
-@vehicleMake,
-@vehicleModel,
-@vehiclePremium,
-@vehicleAnnualMileage,
-@vehicleVehicleUse,
-@vehicleAddress1Garaged,
-@vehicleAddress2Garaged)
-  COMMIT TRANSACTION
-END TRY
-BEGIN CATCH
-ROLLBACK TRANSACTION
-  SELECT 
-    ERROR_NUMBER() AS ErrorNumber
-   ,ERROR_SEVERITY() AS ErrorSeverity
-   ,ERROR_STATE() AS ErrorState
-   ,ERROR_PROCEDURE() AS ErrorProcedure
-   ,ERROR_LINE() AS ErrorLine
-   ,ERROR_MESSAGE() AS ErrorMessage;
-END CATCH
-
-RETURN;
-
-GO
-
-CREATE PROCEDURE paca.addVehicleClaim_v1
-@vehicleClaimAccountNum NVARCHAR(11),
-@vehicleClaimVin NVARCHAR(32),
-@vehicleClaimTitle NVARCHAR(256),
-@vehicleClaimDescription NVARCHAR(MAX),
-@vehicleClaimClaimType INT,
-@vehicleClaimExternalCaseNumber NVARCHAR(32),
-@vehicleClaimDeductible DECIMAL(10,2),
-@vehicleClaimTotalEstimate DECIMAL(10,2),
-@vehicleClaimStatus SMALLINT,
-@vehicleClaimMedia SMALLINT,
-@vehicleClaimTowCompany NVARCHAR(128)
-/*
-  VEHICLE_CLAIMS_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
-	VEHICLE_CLAIMS_VEHICLE_VIN NVARCHAR(32) NOT NULL,
-	VEHICLE_CLAIMS_TITLE NVARCHAR(256) NOT NULL,
-	VEHICLE_CLAIMS_DESCRIPTION NVARCHAR(MAX) NOT NULL,
-	VEHICLE_CLAIMS_CLAIM_TYPE INT NOT NULL,
-	VEHICLE_CLAIMS_EXTERNAL_CASE_NUMBER NVARCHAR(32) NULL,
-	VEHICLE_CLAIMS_DEDUCTIBLE DECIMAL(10,2) NULL,
-	VEHICLE_CLAIMS_TOTAL_ESTIMATE DECIMAL(10,2) NULL,
-	VEHICLE_CLAIMS_STATUS SMALLINT NULL,
-	VEHICLE_CLAIMS_MEDIA SMALLINT NULL,
-	VEHICLE_CLAIMS_TOW_COMPANY NVARCHAR(128) NULL,
-	CONSTRAINT PK_VehicleClaim PRIMARY KEY CLUSTERED 
-*/
-AS
-SET NOCOUNT ON
-BEGIN TRY
-BEGIN TRANSACTION
-INSERT INTO paca.VEHICLE_CLAIMS VALUES (@vehicleClaimAccountNum,
-@vehicleClaimVin,
-@vehicleClaimTitle,
-@vehicleClaimDescription,
-@vehicleClaimClaimType,
-@vehicleClaimExternalCaseNumber,
-@vehicleClaimDeductible,
-@vehicleClaimTotalEstimate,
-@vehicleClaimStatus,
-@vehicleClaimMedia,
-@vehicleClaimTowCompany)
-COMMIT TRANSACTION
-END TRY
-BEGIN CATCH
-ROLLBACK TRANSACTION
-  SELECT 
-    ERROR_NUMBER() AS ErrorNumber
-   ,ERROR_SEVERITY() AS ErrorSeverity
-   ,ERROR_STATE() AS ErrorState
-   ,ERROR_PROCEDURE() AS ErrorProcedure
-   ,ERROR_LINE() AS ErrorLine
-   ,ERROR_MESSAGE() AS ErrorMessage;
-END CATCH
-
-RETURN;
-
-GO
-
-CREATE PROCEDURE paca.addHome_v1
-@homeAccountNum NVARCHAR(11),
-@homeAccountPremium DECIMAL(10,2),
-@homeAddress NVARCHAR(128),
-@homeSec1DW DECIMAL(10,2),
-@homeSec1DWEX DECIMAL(10,2),
-@homeSec1PP DECIMAL(10,2),
-@homeSec1LOU DECIMAL(10,2),
-@homeSec1FDSC DECIMAL(10,2),
-@homeSec1SL DECIMAL(10,2),
-@homeSec1BUSD DECIMAL(12,2),
-@homeSec2PL DECIMAL(12,2),
-@homeSec2DPO DECIMAL(12,2),
-@homeSec2MPO DECIMAL(12,2)
-/*
-HOMES_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
-HOMES_PREMIUM DECIMAL(10,2) NOT NULL,
-HOMES_ADDRESS NVARCHAR(128) NOT NULL,
-HOMES_SEC1_DW DECIMAL(10,2) NULL,
-HOMES_SEC1_DWEX DECIMAL(10,2) NULL,
-HOMES_SEC1_PER_PROP DECIMAL(10,2) NULL,
-HOMES_SEC1_LOU DECIMAL(10,2) NULL,
-HOMES_SEC1_FD_SC DECIMAL(10,2) NULL,
-HOMES_SEC1_SL DECIMAL(10,2) NULL,
-HOMES_SEC1_BU_SD DECIMAL(12,2) NULL,
-HOMES_SEC2_PL DECIMAL(12,2) NULL,
-HOMES_SEC2_DPO DECIMAL(12,2) NULL,
-HOMES_SEC2_MPO DECIMAL(12,2) NULL,
-*/
-AS
-SET NOCOUNT ON
-BEGIN TRY
-BEGIN TRANSACTION
-INSERT INTO HOMES VALUES (
-@homeAccountNum,
-@homeAccountPremium,
-@homeAddress,
-@homeSec1DW,
-@homeSec1DWEX,
-@homeSec1PP,
-@homeSec1LOU,
-@homeSec1FDSC,
-@homeSec1SL,
-@homeSec1BUSD,
-@homeSec2PL,
-@homeSec2DPO,
-@homeSec2MPO
-)
-COMMIT TRANSACTION
-END TRY
-BEGIN CATCH
-ROLLBACK TRANSACTION
-  SELECT 
-    ERROR_NUMBER() AS ErrorNumber
-   ,ERROR_SEVERITY() AS ErrorSeverity
-   ,ERROR_STATE() AS ErrorState
-   ,ERROR_PROCEDURE() AS ErrorProcedure
-   ,ERROR_LINE() AS ErrorLine
-   ,ERROR_MESSAGE() AS ErrorMessage;
-END CATCH
-
-RETURN;
-
-GO

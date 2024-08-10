@@ -35,6 +35,7 @@
 		2024-08-07: SET RECOVERY MODEL FULL; Added and split original SET Clauses.
 		2024-08-07: SET ARITHABORT ON; and SET TRUSTWORTHY OFF;
 		2024-08-07: SET ALLOW_SNAPSHOT_ISOLATION ON; SET CONCAT_NULL_YIELDS_NULL ON; SET PARAMETERIZATION ON; SET PAGE_VERIFY CHECKSUM;
+		2024-08-09: Adding potential usage for database persistence with Flask. Need to test with pyodbc first.
 		
 
     TO DO (Requested):
@@ -89,7 +90,8 @@
 		26. In SQL Server, what does "SET ANSI_NULLS ON" mean?, https://stackoverflow.com/questions/9766717/in-sql-server-what-does-set-ansi-nulls-on-mean
 		27. SET CONCAT_NULL_YIELDS_NULL (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/set-concat-null-yields-null-transact-sql?view=sql-server-ver16
 		28. SET PARAMETERIZATION (Transact-SQL), https://learn.microsoft.com/en-us/sql/relational-databases/performance/specify-query-parameterization-behavior-by-using-plan-guides?view=sql-server-ver16
-		29. Set the page_verify database option to checksum,
+		29. Set the page_verify database option to checksum, https://learn.microsoft.com/en-us/sql/relational-databases/policy-based-management/set-the-page-verify-database-option-to-checksum?view=sql-server-ver16
+		30. Best practices for persistent database connections in Python when using Flask, https://stackoverflow.com/questions/55523299/best-practices-for-persistent-database-connections-in-python-when-using-flask
 
 
 	Author Notes:
@@ -112,9 +114,10 @@
 **/
 
 
--- We need to create the Database First
+-- We need to create the Database First while in the Master Database
 USE MASTER
 
+--Create our database. Aptly named PACA.
 CREATE DATABASE PACA
 ON PRIMARY
 	( NAME=N'PACA',
@@ -165,15 +168,15 @@ SET PAGE_VERIFY CHECKSUM; --Microsoft Best Practices Recommendation.
 GO
 
 ALTER DATABASE [PACA]
-SET RECOVERY FULL;
+SET RECOVERY FULL; --FULL is necessary, as this will ensure that the transaction log is in lock-step.
 GO
 
 USE PACA
 CREATE LOGIN pacauser WITH PASSWORD = N'pacauser',
-	DEFAULT_DATABASE = PACA,
+	DEFAULT_DATABASE = PACA, --This user's Default MUST be PACA.
 	--DEFAULT_SCHEMA = paca, Invalid Keyword for CREATE LOGIN.
-	CHECK_EXPIRATION = OFF,
-	CHECK_POLICY = OFF;
+	CHECK_EXPIRATION = OFF, --Disabled to never expire
+	CHECK_POLICY = OFF; --Disabled to not use the Windows Domain Level Password Requirements.
 GO
 
 /**
@@ -201,6 +204,7 @@ ALTER USER pacauser WITH DEFAULT_SCHEMA = paca;
 GRANT VIEW DEFINITION TO pacauser;
 GO
 
+--We have to be in the master database to be able to grant view server state to a user.
 USE MASTER
 
 GRANT VIEW SERVER STATE TO pacauser;
@@ -389,7 +393,7 @@ CREATE TABLE paca.VEHICLES
 	VEHICLE_ID INT IDENTITY(1,1),
 	VEHICLE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
 	VEHICLE_VIN NVARCHAR(32) NOT NULL,
-	VEHICLE_YEAR DATETIME NOT NULL,
+	VEHICLE_YEAR INT NOT NULL,
 	VEHICLE_MAKE	NVARCHAR(32) NOT NULL,
 	VEHICLE_MODEL	NVARCHAR(65) NOT NULL,
 	VEHICLE_PREMIUM	DECIMAL(5,2) NOT NULL,
@@ -433,6 +437,7 @@ BEGIN TRY
 CREATE TABLE paca.HOMES
 (
 	HOMES_ID INT IDENTITY(1,1),
+	HOMES_INTERAL_ID AS N'HOM' + RIGHT('00000000' + CAST(ACCOUNT_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
 	HOMES_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
 	HOMES_PREMIUM DECIMAL(10,2) NOT NULL,
 	HOMES_ADDRESS NVARCHAR(128) NOT NULL,
@@ -752,7 +757,7 @@ SET @jpauljones = (SELECT TOP 1 ACCOUNT_NUM FROM paca.ACCOUNTS WHERE ACCOUNT_FIR
 */
 
 --Robert Plant needs a Vehicle
-INSERT INTO paca.VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005',N'Hyundai',N'Santa Fe',174.90,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
 /*
 
@@ -774,7 +779,7 @@ INSERT INTO paca.VEHICLES VALUES (@rplant,N'KM8SC13EX5U005568',N'2005-01-01',N'H
 */
 
 --Jimmy Page needs a Vehicle and a Home.
-INSERT INTO paca.VEHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@jpage,N'5NPEB4AC0BH281769',N'2011',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 
 INSERT INTO paca.HOMES VALUES (@jpage,1374.28,N'1348 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
@@ -784,7 +789,7 @@ INSERT INTO paca.HOMES VALUES (@jbonham,1374.28,N'1350 Zeppelin Ct., Kansas City
 --John Paul Jones needs a Home and a Vehicle
 INSERT INTO paca.HOMES VALUES (@jpauljones,1374.28,N'1352 Zeppelin Ct., Kansas City, Kansas, 66025',100.00,100.00,214.60,10000.00,2500.00,3500.00,500.00,250.00,125.00,250.00);
 
-INSERT INTO paca.VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',N'2011-01-01',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
+INSERT INTO paca.VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',N'2011',N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 END TRY
 BEGIN CATCH
 RAISERROR(N'Unable to perform Vehicles and Homes inserts.',20,-1)

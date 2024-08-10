@@ -17,6 +17,8 @@
         2024-08-06: Added Homes Update Statements.
         2024-08-06: Removed Default set of Citations that were not applicable.
         2024-08-06: Added missing Schema for any applicable Stored Procedures.
+        2024-08-09: Added AND VEHICLE_VIN = @vehicleVin line for the WHERE clause of the
+            Vehicle Update Stored Procedure.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -24,6 +26,8 @@
 	TO DO (SELF):
 		Policies Enumerations. - DONE
 		Bundle Enumeration for Car and Home. For non-goal. - DONE
+        Incorporation of the STRING_SPLIT() function. This was introduced in MS SQL Server 2016,
+            
 		
     DISCLAIMER:
         After receipt, this Script is "as-is". Additional modifications past the base are at 100.00 per hour.
@@ -43,6 +47,15 @@
         @accountItemToUpdate: What we are needing to update in the given row. Possible Values are the column names themselves.
             Any value provided outside of this will be handled on the Python end.
         @accountItemVal: The value actual we are setting the column to.
+        @homeItemToUpdate What we are needing to update in the given row. Possible Values are the column names themselves.
+            Any value provided outside of this will be handled on the Python end.
+        @homeItemVal: The value actual we are setting the column to.
+        @homesIntID: Internal ID assigned to the Home.
+        @vehicleItemVal: The value actual we are setting the column to.
+        @vehicleItemToUpdate: What we are needing to update in the given row. Possible Values are the column names themselves.
+            Any value provided outside of this will be handled on the Python end.
+        @tempAccount: Temporary Holding for the Account Number.
+        @vehicleVin: VIN Number of the Vehicle.
 
 		
 	Citations:
@@ -53,15 +66,24 @@
         5. IF...ELSE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/if-else-transact-sql?view=sql-server-ver16
         6. Tutorial: Signing Stored Procedures With a Certificate, https://learn.microsoft.com/en-us/sql/relational-databases/tutorial-signing-stored-procedures-with-a-certificate?view=sql-server-ver16
         7. Slash Star (Block Comment), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql?view=sql-server-ver16
+        8. STRING_SPLIT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/functions/string-split-transact-sql?view=sql-server-ver16
+        9. TRY_CAST (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/functions/try-cast-transact-sql?view=sql-server-ver16
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
 		GO Keyword does not require a semi-colon. As it would be redundant.
 		BEGIN...END Blocks have been phased out completely for TRY...CATCH and GO.
         BEGIN TRANSACTION...COMMIT TRANSACTION Blocks to be used. As it is intended
-            for the application to be running these statements.
-    These will need to be transitioned into Stored Procedures. This is necessary for
-      exposing an external Web service.
+            for the application to be running these statements. You MUST immediately
+            COMMIT the TRANSACTION following the Statement(s) execution(s). This is
+            to avoid erroneously leaving your cursor open.
+        STRING_SPLIT() consideration is being staged. I need to determine how I will
+            deliver the data from Python to the Database. Because a For...Each will
+            be necessary to process through the list and concatenation paired with
+            possible additional STRING_SPLIT()s (e.g. STRING_SPLIT(N'VEHICLE_YEAR:2022,
+            VEHICLE_MAKE:Hyundai,VEHCILE_MODEL:Elantra',',') first, followed by
+            STRING_SPLIT(@input,':') second).
+        OVERHAUL - STRING_SPLIT() will require a re-design of the Queries.
 
   BEST PRACTICES OF STORED PROCEDURES:
     Use the SET NOCOUNT ON statement as the first statement in the body of the procedure. That is, place it just after the AS keyword. This turns off messages that SQL Server sends back to the client after any SELECT, INSERT, UPDATE, MERGE, and DELETE statements are executed. This keeps the output generated to a minimum for clarity. There is no measurable performance benefit however on today's hardware. For information, see SET NOCOUNT (Transact-SQL).
@@ -359,7 +381,8 @@ GO
 CREATE PROCEDURE paca.updateHome_v1
 @accountNum NVARCHAR(11),
 @homeItemToUpdate NVARCHAR(MAX),
-@homeItemVal NVARCHAR(128)
+@homeItemVal NVARCHAR(128),
+@homesIntID NVARCHAR(11)
 AS
 SET NOCOUNT ON
 BEGIN TRY
@@ -382,84 +405,84 @@ IF (@homeItemToUpdate = N'HOMES_PREMIUM')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_PREMIUM = CAST(@homeItemVal AS DECIMAL(10,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_ADDRESS')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_ADDRESS = CAST(@homeItemVal AS NVARCHAR(128))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC1_DW')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC1_DW = CAST(@homeItemVal AS DECIMAL(10,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC1_DWEX')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC1_DWEX = CAST(@homeItemVal AS DECIMAL(10,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC1_PER_PROP')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC1_PER_PROP = CAST(@homeItemVal AS DECIMAL(10,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC1_LOU')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC1_LOU = CAST(@homeItemVal AS DECIMAL(10,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC1_FD_SC')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC1_FD_SC = CAST(@homeItemVal AS DECIMAL(10,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC1_SI')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC1_SI = CAST(@homeItemVal AS DECIMAL(10,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
-IF (@homeItemToUpdate= N'HOMES_SEC1_BU_SD')
+IF (@homeItemToUpdate= N'HOMES_SEC1_BU_SD') AND HOMES_INTERAL_ID = @homesIntID
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC1_BU_SD = CAST(@homeItemVal AS DECIMAL(12,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC2_PL')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC2_PL = CAST(@homeItemVal AS DECIMAL(12,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC2_DPO')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC2_DPO = CAST(@homeItemVal AS DECIMAL(12,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 IF (@homeItemToUpdate= N'HOMES_SEC2_MPO')
 BEGIN
     UPDATE paca.HOMES
     SET HOMES_SEC2_MPO = CAST(@homeItemVal AS DECIMAL(12,2))
-    WHERE HOMES_ACCOUNT_NUM = @accountNum
+    WHERE HOMES_ACCOUNT_NUM = @accountNum AND HOMES_INTERAL_ID = @homesIntID
 END
 
 
@@ -475,5 +498,123 @@ SELECT
         ,ERROR_LINE() AS ErrorLine
         ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
+
+GO
+
+/*
+Update our vehicle
+*/
+
+CREATE PROCEDURE updateVehicle_v1
+@accountNum NVARCHAR(11),
+@vehicleItemVal NVARCHAR(128),
+@vehicleItemToUpdate NVARCHAR(128),
+@vehicleVin NVARCHAR(32)
+
+/*
+    VEHICLE_ID INT IDENTITY(1,1),
+	VEHICLE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
+	VEHICLE_VIN NVARCHAR(32) NOT NULL,
+	VEHICLE_YEAR DATETIME NOT NULL,
+	VEHICLE_MAKE	NVARCHAR(32) NOT NULL,
+	VEHICLE_MODEL	NVARCHAR(65) NOT NULL,
+	VEHICLE_PREMIUM	DECIMAL(5,2) NOT NULL,
+	VEHICLE_ANNUAL_MILEAGE INT NULL,
+	VEHICLE_VEHICLE_USE	NVARCHAR(64) NOT NULL,
+	VEHICLE_ADDRESS1_GARAGED NVARCHAR(128) NOT NULL,
+	VEHICLE_ADDRESS2_GARAGED NVARCHAR(128) NULL,
+*/
+AS
+SET NOCOUNT ON
+DECLARE @tempAccount NVARCHAR(11);
+BEGIN TRY
+SET @tempAccount = @accountNum
+
+IF (@vehicleItemToUpdate = N'VEHICLE_ACCOUNT_NUM')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_ACCOUNT_NUM = CAST(@vehicleItemVal AS NVARCHAR(11))
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_YEAR')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_YEAR = CAST(@vehicleItemVal AS INT)
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_MAKE')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_MAKE = CAST(@vehicleItemVal AS NVARCHAR(32))
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_MODEL')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_MODEL = CAST(@vehicleItemVal AS NVARCHAR(65))
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_PREMIUM')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_PREMIUM = CAST(@vehicleItemVal AS DECIMAL(5,2))
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_ANNUAL_MILEAGE')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_ANNUAL_MILEAGE = CAST(@vehicleItemVal AS INT)
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_VEHICLE_USE')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_VEHICLE_USE = CAST(@vehicleItemVal AS NVARCHAR(64))
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_ADDRESS1_GARAGED')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_ADDRESS1_GARAGED = CAST(@vehicleItemVal AS NVARCHAR(128))
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+IF (@vehicleItemToUpdate= N'VEHICLE_ADDRESS2_GARAGED')
+BEGIN
+    UPDATE paca.VEHICLES
+    SET VEHICLE_ADDRESS2_GARAGED = CAST(@vehicleItemVal AS NVARCHAR(128))
+    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
+    AND VEHICLE_VIN = @vehicleVin
+END
+
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+        ERROR_NUMBER() AS ErrorNumber
+        ,ERROR_SEVERITY() AS ErrorSeverity
+        ,ERROR_STATE() AS ErrorState
+        ,ERROR_PROCEDURE() AS ErrorProcedure
+        ,ERROR_LINE() AS ErrorLine
+        ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
 
 GO
