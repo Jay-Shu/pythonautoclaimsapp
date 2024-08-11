@@ -1,11 +1,81 @@
 /*
+	CHARINDEX CANNOT LOCATE CHAR(61) OR CHAR(58).
 
-    END RESULT: UPDATE paca.VEHICLES SET VEHICLE_YEAR=2022 VEHICLE_MODEL=Elant'_MODEL=Elantra'  VEHICLE_MAKE=Hyund'_MAKE=Hyundai' 
-    EXPECTED RESULT: UPDATE paca.VEHICLES SET VEHICLE_YEAR='2022',VEHICLE_MODEL='Elantra', VEHICLE_MAKE='Hyundai'
-	https://stackoverflow.com/questions/11010453/get-everything-after-and-before-certain-character-in-sql-server
+	Scrapped previous design. This design works.
+
 */
 
+DECLARE @stringsplittheory NVARCHAR(MAX)
 
+SET @stringsplittheory = REPLACE(REPLACE('{VEHICLE_YEAR:2022,VEHICLE_MAKE:Hyundai,VEHICLE_MODEL:Elantra}','{',''),'}','')
+
+IF(OBJECT_ID(N'mytemptable',N'U')) is null
+BEGIN
+CREATE TABLE mytemptable
+(ID INT IDENTITY(1,1),
+QUERY NVARCHAR(MAX));
+END
+ELSE
+BEGIN
+DROP TABLE mytemptable;
+CREATE TABLE mytemptable
+(ID INT IDENTITY(1,1),
+QUERY NVARCHAR(MAX));
+END
+
+INSERT INTO mytemptable
+SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@stringsplittheory,',')
+
+SELECT * FROM mytemptable
+
+DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.VEHICLES SET ',
+@count INT = 1, @secondaryCounter INT, @currentVal NVARCHAR(MAX),@rowCount INT
+
+SET @rowCount = (SELECT COUNT(*) FROM mytemptable)
+
+WHILE @count <= @rowCount
+BEGIN
+SET @currentVal = (
+SELECT TOP 1 QUERY
+FROM mytemptable
+WHERE ID = @count
+)
+
+
+SET @updStatement += @currentVal +' '
+SET @count += 1
+
+END
+
+SELECT @updStatement
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+2022-08-10: Archive
 
 DECLARE @stringsplittheory NVARCHAR(MAX)
 
@@ -60,14 +130,16 @@ SUBSTRING() will be needed here instead of RIGHT()
 
 IF (@count = 1)
 BEGIN
-SET @processingChar = (SELECT SUBSTRING(@myval,LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1,LEN(@myval) - LEN(LEFT(@myval,CHARINDEX ('=', @myval))) - LEN(RIGHT(@myval, LEN(@myval) - CHARINDEX ('=', @myval))) - 1));
+SET @processingChar = (SELECT SUBSTRING(@myval,
+LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1,
+LEN(@myval) - LEN(LEFT(@myval,CHARINDEX ('=', @myval))) - LEN(RIGHT(@myval, LEN(@myval) - CHARINDEX ('=', @myval))) - 1));
 --SET @processingChar2 = SUBSTRING(@myconcat,CHARINDEX('=',@myconcat),1);
 --SET @processingChar = '''' + RIGHT(@myconcat,CHARINDEX(N'=',@myconcat)+1) + ''''
 SET @myval = @updateKeyword + @processingChar 
 --+ @processingChar2
 
 SELECT @myval
-SELECT @processingChar2
+--SELECT @processingChar2
 
 --Not producing the desired effect.
 SET @secondaryCounter = (SELECT COUNT(QUERY) FROM mytemptable) --We need to track the rows.
@@ -99,6 +171,4 @@ SELECT SUBSTRING(@myval, LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1, LEN(@my
 */
 SELECT SUBSTRING(@myval,LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1,LEN(@myval) - LEN(LEFT(@myval,CHARINDEX ('=', @myval))) - LEN(RIGHT(@myval, LEN(@myval) - CHARINDEX ('=', @myval))) - 1);
 
-SELECT LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1
-SELECT LEN(@myval) - LEN(LEFT(@myval,CHARINDEX ('=', @myval)))
--- - LEN(RIGHT(@myval, LEN(@myval) - CHARINDEX ('=', @myval)))
+*/
