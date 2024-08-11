@@ -103,9 +103,9 @@ SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(
 SELECT * FROM mytemptable
 
 DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.VEHICLES SET ',
-@count INT = 1, @secondaryCounter INT, @currentVal NVARCHAR(MAX),@rowCount INT
+@count INT = 1, @currentVal NVARCHAR(MAX),@rowCount INT
 
-SET @rowCount = (SELECT COUNT(*) FROM mytemptable)
+SET @rowCount = (SELECT COUNT(QUERY) FROM mytemptable)
 
 WHILE @count <= @rowCount
 BEGIN
@@ -128,3 +128,5 @@ SET @count += 1
 END
 
 SELECT @updStatement
+
+DROP TABLE mytemptable
