@@ -19,6 +19,7 @@
         2024-08-06: Added missing Schema for any applicable Stored Procedures.
         2024-08-09: Added AND VEHICLE_VIN = @vehicleVin line for the WHERE clause of the
             Vehicle Update Stored Procedure.
+        2024-08-11: Re-design of updateAccount_v1.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -44,9 +45,7 @@
 
     Scalar Variables:
         @accountNum: Account Number of the Client Account.
-        @accountItemToUpdate: What we are needing to update in the given row. Possible Values are the column names themselves.
-            Any value provided outside of this will be handled on the Python end.
-        @accountItemVal: The value actual we are setting the column to.
+        @accountArray: Our Account Data to process for building the update statement.
         @homeItemToUpdate What we are needing to update in the given row. Possible Values are the column names themselves.
             Any value provided outside of this will be handled on the Python end.
         @homeItemVal: The value actual we are setting the column to.
@@ -104,8 +103,7 @@
 
 CREATE PROCEDURE paca.updateAccount_v1
 @accountNum NVARCHAR(11),
-@accountItemToUpdate NVARCHAR(MAX),
-@accountItemVal NVARCHAR(128)
+@accountArray NVARCHAR(MAX)
 AS
 SET NOCOUNT ON
 BEGIN TRY
@@ -115,10 +113,85 @@ BEGIN TRY
 @accountNum: This is the Account Number Associated with the Client's Account.
 @accountItemToUpdate: This is the Item we are updating with the Account
     itself. Vehicles and Homes will not be updated here.
-@accountItemVal: This is the Value Actual we are using to update the Account.
 
 */
 
+SET @accountArray = REPLACE(REPLACE(@accountArray,'{',''),'}','')
+
+IF(OBJECT_ID(N'mytemptable',N'U')) is null
+BEGIN
+CREATE TABLE mytemptable
+(ID INT IDENTITY(1,1),
+QUERY NVARCHAR(MAX));
+END
+ELSE
+BEGIN
+DROP TABLE mytemptable;
+CREATE TABLE mytemptable
+(ID INT IDENTITY(1,1),
+QUERY NVARCHAR(MAX));
+END
+
+INSERT INTO mytemptable
+SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@accountArray,',')
+
+--SELECT * FROM mytemptable
+
+DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.ACCOUNTS SET ',
+@count INT = 1, @currentVal NVARCHAR(MAX),@rowCount INT
+
+SET @rowCount = (SELECT COUNT(QUERY) FROM mytemptable)
+
+WHILE @count <= @rowCount
+BEGIN
+SET @currentVal = (
+SELECT TOP 1 QUERY
+FROM mytemptable
+WHERE ID = @count
+)
+
+IF(@count = 1)
+  BEGIN
+  SET @updStatement += @currentVal +' '
+  END
+IF(@count <= @rowCount)
+  BEGIN
+  SET @updStatement += ',' + @currentVal +' '
+  END
+  
+SET @count += 1
+
+END
+
+SET @updStatement += ' WHERE ACCOUNT_NUM = ' + '''' + @accountNum + '''' + ';'
+
+BEGIN TRANSACTION
+EXECUTE(@updStatement);
+COMMIT TRANSACTION
+
+--Uncomment this to prevent the Temporay Table from persisting.
+--DROP TABLE mytemptable;
+
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+-- Need to add in a method for determining the table we are using.
+-- This is for when it is Table Agnostic.
+
+EXECUTE paca.getAccounts_v3 @accountNum
+
+RETURN;
+GO
+/*
 IF @accountItemToUpdate = N'ACCOUNT_HONORIFICS'
     BEGIN TRY
     BEGIN TRANSACTION
@@ -364,6 +437,8 @@ IF @accountItemToUpdate = N'ACCOUNT_TYPE'
         ,ERROR_MESSAGE() AS ErrorMessage;
     END CATCH
 END TRY
+
+
 BEGIN CATCH
 -- We need to Rollback our transaction if it did not work.
 SELECT 
@@ -377,6 +452,8 @@ END CATCH
 
 RETURN;
 GO
+
+*/
 
 CREATE PROCEDURE paca.updateHome_v1
 @accountNum NVARCHAR(11),

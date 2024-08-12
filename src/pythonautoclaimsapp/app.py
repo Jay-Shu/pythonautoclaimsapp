@@ -1,42 +1,26 @@
 """
-Python Auto Claims app - Simple. Intended for interactions with an MS SQL DB.
+Python Auto Claims app - Simple. Intended for interactions with an MS SQL DB. In it's current state the Python side has not yet been started. Therefaore, in it's base form.
 """
 
-import importlib.metadata
-import sys
-
-from PySide6 import QtWidgets
-from PySide6 import QtGui
-from PySide6 import QtCore
+import toga
+from toga.style import Pack
+from toga.style.pack import COLUMN, ROW
 
 
-class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
-        self.init_ui()
+class pythonautoclaimsapp(toga.App):
+    def startup(self):
+        """Construct and show the Toga application.
 
-    def init_ui(self):
-        self.setWindowTitle("Auto Claims Application")
-        self.show()
+        Usually, you would add your application to a main content box.
+        We then create a main window (with a name matching the app), and
+        show the main window.
+        """
+        main_box = toga.Box()
+
+        self.main_window = toga.MainWindow(title=self.formal_name)
+        self.main_window.content = main_box
+        self.main_window.show()
 
 
 def main():
-    # Linux desktop environments use an app's .desktop file to integrate the app
-    # in to their application menus. The .desktop file of this app will include
-    # the StartupWMClass key, set to app's formal name. This helps associate the
-    # app's windows to its menu item.
-    #
-    # For association to work, any windows of the app must have WMCLASS property
-    # set to match the value set in app's desktop file. For PySide6, this is set
-    # with setApplicationName().
-
-    # Find the name of the module that was used to start the app
-    app_module = sys.modules["__main__"].__package__
-    # Retrieve the app's metadata
-    metadata = importlib.metadata.metadata(app_module)
-
-    QtWidgets.QApplication.setApplicationName(metadata["Formal-Name"])
-
-    app = QtWidgets.QApplication(sys.argv)
-    main_window = MainWindow()
-    sys.exit(app.exec())
+    return pythonautoclaimsapp()

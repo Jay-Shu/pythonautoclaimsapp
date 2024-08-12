@@ -3,14 +3,14 @@
 project_name = "pythonautoclaimsapp"
 bundle = "com.self.published"
 version = "0.0.1"
-url = "https://urlgoeshere.com/pythonautoclaimsapp"
+url = "https://published.self.com/pythonautoclaimsapp"
 license.file = "LICENSE"
 author = "Jacob Shuster"
 author_email = "jcbshuster@yahoo.com"
 
 [tool.briefcase.app.pythonautoclaimsapp]
 formal_name = "pythonautoclaimsapp"
-description = "Python Auto Claims app - Simple. Intended for interactions with an MS SQL DB."
+description = "Python Auto Claims app - Simple. Intended for interactions with an MS SQL DB. In it's current state the Python side has not yet been started. Therefaore, in it's base form."
 long_description = """More details about the app should go here.
 """
 sources = [
@@ -21,8 +21,6 @@ test_sources = [
 ]
 
 requires = [
-    "PySide6-Essentials~=6.5",
-    # "PySide6-Addons~=6.5",
 ]
 test_requires = [
     "pytest",
@@ -31,92 +29,156 @@ test_requires = [
 [tool.briefcase.app.pythonautoclaimsapp.macOS]
 universal_build = true
 requires = [
+    "toga-cocoa~=0.4.5",
     "std-nslog~=1.0.0",
 ]
 
 [tool.briefcase.app.pythonautoclaimsapp.linux]
 requires = [
+    "toga-gtk~=0.4.5",
 ]
 
 [tool.briefcase.app.pythonautoclaimsapp.linux.system.debian]
 system_requires = [
+    # Needed to compile pycairo wheel
+    "libcairo2-dev",
+    # Needed to compile PyGObject wheel
+    "libgirepository1.0-dev",
 ]
 
 system_runtime_requires = [
-    # Derived from https://doc.qt.io/qt-6/linux-requirements.html
-    "libxext6",
-    "libxrender1",
-    "libx11-xcb1",
-    "libxkbcommon-x11-0",
-    "libxcb-image0",
-    "libxcb-cursor0",
-    "libxcb-shape0",
-    "libxcb-randr0",
-    "libxcb-xfixes0",
-    "libxcb-sync1",
-    "libxcb-icccm4",
-    "libxcb-keysyms1",
-    "libfontconfig1",
-    "libsm6",
-    "libice6",
-    "libglib2.0-0",
-    "libgl1",
-    "libegl1",
-    "libdbus-1-3",
+    # Needed to provide GTK and its GI bindings
+    "gir1.2-gtk-3.0",
+    "libgirepository-1.0-1",
+    # Dependencies that GTK looks for at runtime
+    "libcanberra-gtk3-module",
+    # Needed to provide WebKit2 at runtime
+    # Note: Debian 11 and Ubuntu 20.04 require gir1.2-webkit2-4.0 instead
+    # "gir1.2-webkit2-4.1",
 ]
 
 [tool.briefcase.app.pythonautoclaimsapp.linux.system.rhel]
 system_requires = [
+    # Needed to compile pycairo wheel
+    "cairo-gobject-devel",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection-devel",
 ]
 
 system_runtime_requires = [
-    "qt6-qtbase-gui",
+    # Needed to support Python bindings to GTK
+    "gobject-introspection",
+    # Needed to provide GTK
+    "gtk3",
+    # Dependencies that GTK looks for at runtime
+    "libcanberra-gtk3",
+    # Needed to provide WebKit2 at runtime
+    # "webkit2gtk3",
 ]
 
 [tool.briefcase.app.pythonautoclaimsapp.linux.system.suse]
 system_requires = [
+    # Needed to compile pycairo wheel
+    "cairo-devel",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection-devel",
 ]
 
 system_runtime_requires = [
-    "libgthread-2_0-0",
-    "libQt6Gui6",
+    # Needed to provide GTK
+    "gtk3",
+    # Needed to support Python bindings to GTK
+    "gobject-introspection", "typelib(Gtk) = 3.0",
+    # Dependencies that GTK looks for at runtime
+    "libcanberra-gtk3-module",
+    # Needed to provide WebKit2 at runtime
+    # "libwebkit2gtk3", "typelib(WebKit2)",
 ]
 
 [tool.briefcase.app.pythonautoclaimsapp.linux.system.arch]
 system_requires = [
+    # Needed to compile pycairo wheel
+    "cairo",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection",
+    # Runtime dependencies that need to exist so that the
+    # Arch package passes final validation.
+    # Needed to provide GTK
+    "gtk3",
+    # Dependencies that GTK looks for at runtime
+    "libcanberra",
+    # Needed to provide WebKit2
+    # "webkit2gtk",
 ]
 
 system_runtime_requires = [
-    "qt6-base",
+    # Needed to provide GTK
+    "gtk3",
+    # Needed to provide PyGObject bindings
+    "gobject-introspection-runtime",
+    # Dependencies that GTK looks for at runtime
+    "libcanberra",
+    # Needed to provide WebKit2 at runtime
+    # "webkit2gtk",
 ]
 
 [tool.briefcase.app.pythonautoclaimsapp.linux.appimage]
 manylinux = "manylinux_2_28"
 
 system_requires = [
-# ?? FIXME
+    # Needed to compile pycairo wheel
+    "cairo-gobject-devel",
+    # Needed to compile PyGObject wheel
+    "gobject-introspection-devel",
+    # Needed to provide GTK
+    "gtk3-devel",
+    # Dependencies that GTK looks for at runtime, that need to be
+    # in the build environment to be picked up by linuxdeploy
+    "libcanberra-gtk3",
+    "PackageKit-gtk3-module",
+    "gvfs-client",
 ]
 
 linuxdeploy_plugins = [
+    "DEPLOY_GTK_VERSION=3 gtk",
 ]
 
 [tool.briefcase.app.pythonautoclaimsapp.linux.flatpak]
-flatpak_runtime = "org.kde.Platform"
-flatpak_runtime_version = "6.6"
-flatpak_sdk = "org.kde.Sdk"
+flatpak_runtime = "org.gnome.Platform"
+flatpak_runtime_version = "45"
+flatpak_sdk = "org.gnome.Sdk"
 
 [tool.briefcase.app.pythonautoclaimsapp.windows]
 requires = [
+    "toga-winforms~=0.4.5",
 ]
 
 # Mobile deployments
 [tool.briefcase.app.pythonautoclaimsapp.iOS]
-supported = false
+requires = [
+    "toga-iOS~=0.4.5",
+    "std-nslog~=1.0.0",
+]
 
 [tool.briefcase.app.pythonautoclaimsapp.android]
-supported = false
+requires = [
+    "toga-android~=0.4.5",
+]
+
+base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
+
+build_gradle_dependencies = [
+    "com.google.android.material:material:1.11.0",
+    # Needed for DetailedList
+    # "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0",
+    # Needed for MapView
+    # "org.osmdroid:osmdroid-android:6.1.0",
+]
 
 # Web deployments
 [tool.briefcase.app.pythonautoclaimsapp.web]
-supported = false
+requires = [
+    "toga-web~=0.4.5",
+]
+style_framework = "Shoelace v2.3"
 

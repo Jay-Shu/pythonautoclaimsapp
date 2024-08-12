@@ -77,6 +77,12 @@ STRING_SPLIT() THEORY - CONFIRMED
 
 PROOF OF CONCEPT: v1.0
 
+Variables:
+  @stringsplittheory: Building out of test input from Python.
+  @updStatement: Update Statement, we need up to the SET clause.
+  @count: Counter for While Loop.
+  @rowCount: Number of rows in the mytemptable.
+
 **/
 
 DECLARE @stringsplittheory NVARCHAR(MAX)
@@ -116,13 +122,14 @@ WHERE ID = @count
 )
 
 IF(@count = 1)
-BEGIN
-SET @updStatement += @currentVal +' '
-END
+  BEGIN
+  SET @updStatement += @currentVal +' '
+  END
 IF(@count <= @rowCount)
-BEGIN
-SET @updStatement += ',' + @currentVal +' '
-END
+  BEGIN
+  SET @updStatement += ',' + @currentVal +' '
+  END
+  
 SET @count += 1
 
 END
