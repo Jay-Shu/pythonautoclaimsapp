@@ -116,7 +116,8 @@ BEGIN TRY
 
 */
 
-SET @accountArray = REPLACE(REPLACE(@accountArray,'{',''),'}','')
+
+--SET @myArray = REPLACE(REPLACE(@accountArray,'{',''),'}','')
 
 IF(OBJECT_ID(N'mytemptable',N'U')) is null
 BEGIN
@@ -132,8 +133,18 @@ CREATE TABLE mytemptable
 QUERY NVARCHAR(MAX));
 END
 
-INSERT INTO mytemptable
-SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@accountArray,',')
+
+DECLARE @mycurarray NVARCHAR(MAX)
+SET @mycurarray = (SELECT * FROM paca.StringSplit(REPLACE(REPLACE(@accountArray,'{',''),'}',''),','))
+
+/*
+INSERT INTO mytemptable (QUERY)
+SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@accountArray,',') x
+*/
+
+INSERT INTO mytemptable (QUERY)
+SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@mycurarray,',') x
+
 
 --SELECT * FROM mytemptable
 
