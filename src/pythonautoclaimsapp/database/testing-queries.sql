@@ -15,10 +15,11 @@
 	7. Search Condition (T-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/search-condition-transact-sql?view=sql-server-ver16
 */
 
-CREATE PROCEDURE updateAccounts_v2
+CREATE PROCEDURE updateAccounts_v1
 @json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON
+
 /*
 SET @json = N'[
   {"ACCOUNT_NUM":"ICA00000003","ACCOUNT_HONORIFICS":"Mr.","ACCOUNT_PO_BOX":"123 Easy Street","ACCOUNT_TYPE":"123"}
@@ -261,34 +262,90 @@ IF (@acctState is not null AND @acctState_actual is not null)
 
 
 -- Account ZIP
-IF (@acctZip is not null)
-BEGIN
-SET @updStatement += N' ACCOUNT_ZIP = ' + @acctZip  + N' , '
-END
+IF (@acctZip is not null AND @acctZip_actual is null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_ZIP = ' + @acctZip + N' , '
+	END
+
+IF (@acctZip = N'Intentional' AND @acctZip_actual is not null)
+	BEGIN
+		SET @acctZip = N'NULL'
+		SET @updStatement += N' ACCOUNT_ZIP = '  + @acctZip + N' , '
+	END
+
+IF (@acctZip is not null AND @acctZip_actual is not null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_ZIP = '  + @acctZip + N' , '
+	END
 
 -- Account PO Box
-IF (@acctPoBox is not null)
-BEGIN
-SET @updStatement += N' ACCOUNT_PO_BOX = ' + ''''  + @acctPoBox + '''' + N' , '
-END
+IF (@acctPoBox is not null AND @acctPoBox_actual is null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_PO_BOX = ' + '''' + @acctPoBox + '''' + N' , '
+	END
+
+IF (@acctPoBox = N'Intentional' AND @acctPoBox_actual is not null)
+	BEGIN
+		SET @acctPoBox = N'NULL'
+		SET @updStatement += N' ACCOUNT_PO_BOX = ' + ''''  + @acctPoBox + '''' + N' , '
+	END
+
+IF (@acctPoBox is not null AND @acctPoBox_actual is not null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_PO_BOX = ' + ''''  + @acctPoBox + '''' + N' , '
+	END
 
 -- Account Date Start
-IF (@acctDtSt is not null)
-BEGIN
-SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtSt + '''' + N' , '
-END
+IF (@acctDtSt is not null AND @acctDtSt_actual is null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + '''' + @acctDtSt + '''' + N' , '
+	END
+
+IF (@acctDtSt = N'Intentional' AND @acctDtSt_actual is not null)
+	BEGIN
+		SET @acctDtSt = N'NULL'
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtSt + '''' + N' , '
+	END
+
+IF (@acctDtSt is not null AND @acctDtSt_actual is not null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtSt + '''' + N' , '
+	END
 
 -- Account Date Renewal
-IF (@acctDtRe is not null)
-BEGIN
-SET @updStatement += N' ACCOUNT_DATE_RENEWAL = ' + ''''  + @acctDtRe + '''' + N' , '
-END
+IF (@acctDtRe is not null AND @acctDtRe_actual is null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + '''' + @acctDtRe + '''' + N' , '
+	END
+
+IF (@acctDtRe = N'Intentional' AND @acctDtRe_actual is not null)
+	BEGIN
+		SET @acctDtRe = N'NULL'
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtRe + '''' + N' , '
+	END
+
+IF (@acctDtRe is not null AND @acctDtRe_actual is not null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtRe + '''' + N' , '
+	END
 
 -- Account Type
-IF (@acctType is not null)
-BEGIN
-SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
-END
+IF (@acctType is not null AND @acctType_actual is null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
+	END
+
+IF (@acctType = N'Intentional' AND @acctType_actual is not null)
+	BEGIN
+		SET @acctType = N'NULL'
+		SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
+	END
+
+IF (@acctType is not null AND @acctType_actual is not null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
+	END
+
 
 IF(RIGHT(@updStatement,2) = N', ')
 BEGIN
@@ -315,279 +372,8 @@ SELECT
   ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
 
-
-RETURN;
-
-GO
-
-
-DECLARE @stringsplittheory NVARCHAR(MAX)
-
-SET @stringsplittheory = REPLACE(REPLACE('{VEHICLE_YEAR:2022,VEHICLE_MAKE:Hyundai,VEHICLE_MODEL:Elantra}','{',''),'}','')
-
-IF(OBJECT_ID(N'mytemptable',N'U')) is null
-BEGIN
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
-END
-ELSE
-BEGIN
-DROP TABLE mytemptable;
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
-END
-
-INSERT INTO mytemptable
-SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@stringsplittheory,',')
-
-SELECT * FROM mytemptable
-
-DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.VEHICLES SET ',
-@count INT = 1, @secondaryCounter INT, @currentVal NVARCHAR(MAX),@rowCount INT
-
-SET @rowCount = (SELECT COUNT(*) FROM mytemptable)
-
-WHILE @count <= @rowCount
-BEGIN
-SET @currentVal = (
-SELECT TOP 1 QUERY
-FROM mytemptable
-WHERE ID = @count
-)
-
-
-SET @updStatement += @currentVal +' '
-SET @count += 1
-
-END
-
-SELECT @updStatement
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-2022-08-10: Archive
-
-DECLARE @stringsplittheory NVARCHAR(MAX)
-
-SET @stringsplittheory = N'{VEHICLE_YEAR:2022,VEHICLE_MAKE:Hyundai,VEHICLE_MODEL:Elantra}'
-SET @stringsplittheory = REPLACE(REPLACE(@stringsplittheory,N'{',N''),N'}',N'')
-
-
-IF(OBJECT_ID(N'mytemptable',N'U')) is null
-BEGIN
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
-END
-ELSE
-BEGIN
-DROP TABLE mytemptable;
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
-END
-
-INSERT INTO mytemptable
-SELECT REPLACE(value,CHAR(58),CHAR(61)) FROM STRING_SPLIT(@stringsplittheory,',')
-
-
-
-/*
-    Take 2
-*/
-
-DECLARE @count INT = 1,
-@myconcat NVARCHAR(MAX),
-@updateKeyword NVARCHAR(MAX) = N'UPDATE paca.VEHICLES SET ',
-@myval NVARCHAR(MAX),
-@processingChar NVARCHAR(MAX),
-@processingChar2 NVARCHAR(MAX),
-@secondaryCounter INT = 1
-
-WHILE @count < 4
-BEGIN
-SET @myconcat = (
-SELECT TOP 1 QUERY
-FROM mytemptable
-WHERE ID = @count
-)
-
-/*
-
-SUBSTRING() will be needed here instead of RIGHT()
-
-*/
-
-IF (@count = 1)
-BEGIN
-SET @processingChar = (SELECT SUBSTRING(@myval,
-LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1,
-LEN(@myval) - LEN(LEFT(@myval,CHARINDEX ('=', @myval))) - LEN(RIGHT(@myval, LEN(@myval) - CHARINDEX ('=', @myval))) - 1));
---SET @processingChar2 = SUBSTRING(@myconcat,CHARINDEX('=',@myconcat),1);
---SET @processingChar = '''' + RIGHT(@myconcat,CHARINDEX(N'=',@myconcat)+1) + ''''
-SET @myval = @updateKeyword + @processingChar 
---+ @processingChar2
-
-SELECT @myval
---SELECT @processingChar2
-
---Not producing the desired effect.
-SET @secondaryCounter = (SELECT COUNT(QUERY) FROM mytemptable) --We need to track the rows.
---SELECT @stringSplit,ROW_NUMBER() OVER(ORDER BY ID ASC) as ROW#
-
-END
-	IF(@count <= @secondaryCounter AND @count <> 1) --We only need to count to 3
-	BEGIN
-	--SET @processingChar = '''' + @myconcat + ''''
-	SET @myval += ' ' + @myconcat + ' ';
-	--SET @processingChar = '''' + RIGHT(@myconcat,CHARINDEX(N'=',@myconcat)+1) + ''''
-	--SET @myval += ' ' + LEFT(@myconcat,(LEN(@myconcat) - LEN(CHARINDEX(N'=',@myconcat)))) + @processingChar + ' ';
-	END
-	SET @count += 1;
-END
-SELECT @myval
-
---DROP TABLE mytemptable
-
-SELECT * FROM mytemptable
-
---Another avenue for testing
-
---DECLARE @mytempVal XML = N'<paca><VEHICLE_MAKE>Hyundai</VEHICLE_MAKE><VEHICLE_MODEL>Elantra</VEHICLE_MODEL><VEHICLE_YEAR>2022</VEHICLE_YEAR></paca>'
-
-/*
-SELECT SUBSTRING(@myval, LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1, LEN(@myval) - LEN(LEFT(@myval, 
-    CHARINDEX ('=', @myval))) - LEN(RIGHT(@myval, LEN(@myval) - CHARINDEX ('=', @myval))) - 1);
-*/
-SELECT SUBSTRING(@myval,LEN(LEFT(@myval, CHARINDEX ('=', @myval))) + 1,LEN(@myval) - LEN(LEFT(@myval,CHARINDEX ('=', @myval))) - LEN(RIGHT(@myval, LEN(@myval) - CHARINDEX ('=', @myval))) - 1);
-
-*/
-GO
-
-CREATE PROCEDURE paca.updateStatements_StringSplit
-@accountNum NVARCHAR(11),
-@accountArray NVARCHAR(MAX)
-AS
-SET NOCOUNT ON
-BEGIN TRY
-
-/*
-
-@accountNum: This is the Account Number Associated with the Client's Account.
-@accountItemToUpdate: This is the Item we are updating with the Account
-    itself. Vehicles and Homes will not be updated here.
-
-*/
-
-
---SET @myArray = REPLACE(REPLACE(@accountArray,'{',''),'}','')
-
-IF(OBJECT_ID(N'mytemptable',N'U')) is null
-BEGIN
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
-END
-ELSE
-BEGIN
-DROP TABLE mytemptable;
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
-END
-
-
-DECLARE @mycurarray NVARCHAR(MAX)
-SET @mycurarray = (SELECT QUERY FROM paca.StringSplit(REPLACE(REPLACE(@accountArray,'{',''),'}',''),','))
-
-/*
-INSERT INTO mytemptable (QUERY)
-SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@accountArray,',') x
-*/
-
-INSERT INTO mytemptable (QUERY)
-SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@mycurarray,',') x
-
-
---SELECT * FROM mytemptable
-
-DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.ACCOUNTS SET ',
-@count INT = 1, @currentVal NVARCHAR(MAX),@rowCount INT
-
-SET @rowCount = (SELECT COUNT(QUERY) FROM mytemptable)
-
-WHILE @count <= @rowCount
-BEGIN
-SET @currentVal = (
-SELECT TOP 1 QUERY
-FROM mytemptable
-WHERE ID = @count
-)
-
-IF(@count = 1)
-  BEGIN
-  SET @updStatement += @currentVal +' '
-  END
-IF(@count <= @rowCount)
-  BEGIN
-  SET @updStatement += ',' + @currentVal +' '
-  END
-  
-SET @count += 1
-
-END
-
-SET @updStatement += ' WHERE ACCOUNT_NUM = ' + '''' + @accountNum + '''' + ';'
-
-BEGIN TRANSACTION
-EXECUTE(@updStatement);
-COMMIT TRANSACTION
-
---Uncomment this to prevent the Temporay Table from persisting.
---DROP TABLE mytemptable;
-
-END TRY
-BEGIN CATCH
-ROLLBACK TRANSACTION
-SELECT 
-  ERROR_NUMBER() AS ErrorNumber
-  ,ERROR_SEVERITY() AS ErrorSeverity
-  ,ERROR_STATE() AS ErrorState
-  ,ERROR_PROCEDURE() AS ErrorProcedure
-  ,ERROR_LINE() AS ErrorLine
-  ,ERROR_MESSAGE() AS ErrorMessage;
-END CATCH
-
--- Need to add in a method for determining the table we are using.
--- This is for when it is Table Agnostic.
-
 EXECUTE paca.getAccounts_v3 @accountNum
 
 RETURN;
+
 GO

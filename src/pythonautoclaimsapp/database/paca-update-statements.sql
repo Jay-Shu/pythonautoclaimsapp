@@ -20,6 +20,9 @@
         2024-08-09: Added AND VEHICLE_VIN = @vehicleVin line for the WHERE clause of the
             Vehicle Update Stored Procedure.
         2024-08-11: Re-design of updateAccount_v1.
+		2024-08-14: Full replacement of updateAccounts_v1.
+		2024-08-15: Added an additional DECLARE to separate the Inputs from the already existing values.
+		2024-08-15: Resolved repetitive logic causing double SET.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -67,6 +70,13 @@
         7. Slash Star (Block Comment), https://learn.microsoft.com/en-us/sql/t-sql/language-elements/slash-star-comment-transact-sql?view=sql-server-ver16
         8. STRING_SPLIT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/functions/string-split-transact-sql?view=sql-server-ver16
         9. TRY_CAST (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/functions/try-cast-transact-sql?view=sql-server-ver16
+		10. JSON_OBJECT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/functions/json-object-transact-sql?view=sql-server-ver16
+    	11. OPENJSON (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/functions/openjson-transact-sql?view=sql-server-ver16
+    	12. JSON data in SQL Server, https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-ver16
+		13. DECLARE @local_variable, https://learn.microsoft.com/en-us/sql/t-sql/language-elements/declare-local-variable-transact-sql?view=sql-server-ver16
+		14. WHERE (T-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/where-transact-sql?view=sql-server-ver16
+		15. Predicates (T-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/predicates?view=sql-server-ver16
+		16. Search Condition (T-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/search-condition-transact-sql?view=sql-server-ver16
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
@@ -101,88 +111,339 @@
 
 --USE PACA
 
-CREATE PROCEDURE paca.updateAccount_v1
-@accountNum NVARCHAR(11),
-@accountArray NVARCHAR(MAX)
+CREATE PROCEDURE paca.updateAccounts_v1
+@json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON
-BEGIN TRY
+/*
+-- Test block, kept for historical reason.
+SET @json = N'[
+  {"ACCOUNT_NUM":"ICA00000003","ACCOUNT_HONORIFICS":"NULL","ACCOUNT_PO_BOX":"123 Easy Street","ACCOUNT_TYPE":"123"}
+]';
+*/
+DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.ACCOUNTS SET'
+DECLARE @tempTable TABLE (
+	ACCOUNT_NUM	NVARCHAR(11) NOT NULL,
+	ACCOUNT_HONORIFICS	NVARCHAR(16) NULL,
+	ACCOUNT_FIRST_NAME 	NVARCHAR(128) NULL,
+	ACCOUNT_LAST_NAME 	NVARCHAR(128) NULL,
+	ACCOUNT_SUFFIX		NVARCHAR(16) NULL,
+	ACCOUNT_STREET_ADD_1 NVARCHAR(128) NULL,
+	ACCOUNT_STREET_ADD_2 NVARCHAR(128) NULL,
+	ACCOUNT_CITY		NVARCHAR(128) NULL,
+	ACCOUNT_STATE	NVARCHAR(16) NULL,
+	ACCOUNT_ZIP		INT NULL,
+	ACCOUNT_PO_BOX	NVARCHAR(128) NULL,
+	ACCOUNT_DATE_START	DATETIME NULL,
+	ACCOUNT_DATE_RENEWAL DATETIME NULL,
+	ACCOUNT_TYPE	NVARCHAR(64) NULL)
+
+
+INSERT INTO @tempTable
+SELECT
+	ACCOUNT_NUM,
+	ACCOUNT_HONORIFICS,
+	ACCOUNT_FIRST_NAME,
+	ACCOUNT_LAST_NAME,
+	ACCOUNT_SUFFIX,
+	ACCOUNT_STREET_ADD_1,
+	ACCOUNT_STREET_ADD_2,
+	ACCOUNT_CITY,
+	ACCOUNT_STATE,
+	ACCOUNT_ZIP,
+	ACCOUNT_PO_BOX,
+	ACCOUNT_DATE_START,
+	ACCOUNT_DATE_RENEWAL,
+	ACCOUNT_TYPE
+FROM OPENJSON(@json) WITH (
+    ACCOUNT_NUM NVARCHAR(11) 'strict $.ACCOUNT_NUM',
+    ACCOUNT_HONORIFICS NVARCHAR(16) '$.ACCOUNT_HONORIFICS',
+    ACCOUNT_FIRST_NAME 	NVARCHAR(128) '$.ACCOUNT_FIRST_NAME',
+	  ACCOUNT_LAST_NAME 	NVARCHAR(128) '$.ACCOUNT_LAST_NAME',
+	  ACCOUNT_SUFFIX		NVARCHAR(16) '$.ACCOUNT_SUFFIX',
+	  ACCOUNT_STREET_ADD_1 NVARCHAR(128) '$.ACCOUNT_STREET_ADD_1',
+	  ACCOUNT_STREET_ADD_2 NVARCHAR(128) '$.ACCOUNT_STREET_ADD_2',
+	  ACCOUNT_CITY		NVARCHAR(128) '$.ACCOUNT_CITY',
+	  ACCOUNT_STATE	NVARCHAR(16) '$.ACCOUNT_STATE',
+	  ACCOUNT_ZIP		INT '$.ACCOUNT_ZIP',
+	  ACCOUNT_PO_BOX	NVARCHAR(128) '$.ACCOUNT_PO_BOX',
+	  ACCOUNT_DATE_START	DATETIME '$.ACCOUNT_DATE_START',
+	  ACCOUNT_DATE_RENEWAL DATETIME '$.ACCOUNT_DATE_RENEWAL',
+	  ACCOUNT_TYPE	NVARCHAR(64) '$.ACCOUNT_TYPE'
+)
+;
+
+DECLARE @accountNum NVARCHAR(11) = (SELECT TOP 1 ACCOUNT_NUM FROM @tempTable),
+@acctH NVARCHAR(16) = (SELECT TOP 1 ACCOUNT_HONORIFICS FROM @tempTable),
+@acctFN NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_FIRST_NAME FROM @tempTable),
+@acctLN NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_LAST_NAME FROM @tempTable),
+@acctSuf NVARCHAR(16) = (SELECT TOP 1 ACCOUNT_SUFFIX FROM @tempTable),
+@acctStAdd1 NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_STREET_ADD_1 FROM @tempTable),
+@acctStAdd2 NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_STREET_ADD_2 FROM @tempTable),
+@acctCity NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_CITY FROM @tempTable),
+@acctState NVARCHAR(16) = (SELECT TOP 1 ACCOUNT_STATE FROM @tempTable),
+@acctZip NVARCHAR(5) = (SELECT TOP 1 ACCOUNT_ZIP FROM @tempTable),
+@acctPoBox NVARCHAR(64) = (SELECT TOP 1 CAST(ACCOUNT_PO_BOX AS NVARCHAR(64)) FROM @tempTable),
+@acctDtSt NVARCHAR(32) = (SELECT TOP 1 ACCOUNT_DATE_START FROM @tempTable),
+@acctDtRe NVARCHAR(32) = (SELECT TOP 1 ACCOUNT_DATE_RENEWAL FROM @tempTable),
+@acctType NVARCHAR(64) = (SELECT TOP 1 CAST(ACCOUNT_TYPE AS NVARCHAR(64)) FROM @tempTable)
+
+DECLARE @acctH_actual NVARCHAR(16) = (SELECT TOP 1 ACCOUNT_HONORIFICS FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctFN_actual NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_FIRST_NAME FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctLN_actual NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_LAST_NAME FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctSuf_actual NVARCHAR(16) = (SELECT TOP 1 ACCOUNT_SUFFIX FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctStAdd1_actual NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_STREET_ADD_1 FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctStAdd2_actual NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_STREET_ADD_2 FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctCity_actual NVARCHAR(128) = (SELECT TOP 1 ACCOUNT_CITY FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctState_actual NVARCHAR(16) = (SELECT TOP 1 ACCOUNT_STATE FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctZip_actual NVARCHAR(5) = (SELECT TOP 1 ACCOUNT_ZIP FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctPoBox_actual NVARCHAR(64) = (SELECT TOP 1 CAST(ACCOUNT_PO_BOX AS NVARCHAR(64)) FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctDtSt_actual NVARCHAR(32) = (SELECT TOP 1 ACCOUNT_DATE_START FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctDtRe_actual NVARCHAR(32) = (SELECT TOP 1 ACCOUNT_DATE_RENEWAL FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@acctType_actual NVARCHAR(64) = (SELECT TOP 1 CAST(ACCOUNT_TYPE AS NVARCHAR(64)) FROM paca.ACCOUNTS WHERE ACCOUNT_NUM = @accountNum),
+@val UNIQUEIDENTIFIER = NEWID();
 
 /*
-
-@accountNum: This is the Account Number Associated with the Client's Account.
-@accountItemToUpdate: This is the Item we are updating with the Account
-    itself. Vehicles and Homes will not be updated here.
-
+IF (@acctH is null AND @acctH_actual is null)
+BEGIN
+SET @acctH = N'NULL';
+SET @updStatement += N' ACCOUNT_HONORIFICS = '   + @acctH + N' , '
+END
+*/
+/*
+Combinations:
+	1. IS NULL AND IS NULL. Does not need to be defined as no changes are made.
+	2. IS NOT NULL AND IS NULL
+	3. IS NOT NULL AND IS NOT NULL
+	4. IS NULL AND IS NOT NULL
+	5. Intentional Null
 */
 
 
---SET @myArray = REPLACE(REPLACE(@accountArray,'{',''),'}','')
+-- Account Honorifics
+IF (@acctH IS NOT NULL AND @acctH <> N'NULL' AND @acctH_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_HONORIFICS = ' + '''' + @acctH + '''' + N' , '
+	END
 
-IF(OBJECT_ID(N'mytemptable',N'U')) is null
+IF (@acctH = N'NULL' AND @acctH_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_HONORIFICS = NULL , '
+	END
+
+IF (@acctH  <> N'NULL' AND @acctH_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_HONORIFICS = '  + ''''  + @acctH + '''' + N' , '
+	END
+
+-- Account First Name
+IF (@acctFN is not null AND @acctFN <> N'NULL' AND @acctFN_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_FIRST_NAME = ' + '''' + @acctFN + '''' + N' , '
+	END
+
+IF (@acctFN = N'NULL' AND @acctFN_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_FIRST_NAME = NULL , '
+	END
+
+IF (@acctFN  <> N'NULL' AND @acctFN_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_FIRST_NAME = '  + ''''  + @acctFN + '''' + N' , '
+	END
+
+-- Account Last Name
+IF (@acctLN IS NOT NULL AND @acctLN <> N'NULL' AND @acctLN_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_LAST_NAME = ' + '''' + @acctLN + '''' + N' , '
+	END
+
+IF (@acctLN = N'NULL' AND @acctLN_actual is not null)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_LAST_NAME = NULL , '
+	END
+
+IF (@acctLN  <> N'NULL' AND @acctLN_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_LAST_NAME = '  + ''''  + @acctLN + '''' + N' , '
+	END
+
+-- Account Suffix
+IF (@acctSuf IS NOT NULL AND @acctSuf <> N'NULL' AND @acctSuf_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_SUFFIX = ' + '''' + @acctSuf + '''' + N' , '
+	END
+
+IF (@acctSuf = N'NULL' AND @acctSuf_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_SUFFIX = NULL , '
+	END
+
+IF (@acctSuf <> N'NULL' AND @acctSuf_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_SUFFIX = '  + ''''  + @acctSuf + '''' + N' , '
+	END
+
+-- Account Street Address 1
+IF (@acctStAdd1 IS NOT NULL AND @acctStAdd1 <> N'NULL' AND @acctStAdd1_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STREET_ADD_1 = ' + '''' + @acctStAdd1 + '''' + N' , '
+	END
+
+IF (@acctStAdd1 = N'NULL' AND @acctStAdd1_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STREET_ADD_1 = NULL , '
+	END
+
+IF (@acctStAdd1 <> N'NULL' AND @acctStAdd1_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STREET_ADD_1 = '  + ''''  + @acctStAdd1 + '''' + N' , '
+	END
+
+-- Account Street Address 2
+IF (@acctStAdd2 IS NOT NULL AND @acctStAdd2 <> N'NULL' AND @acctStAdd2_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STREET_ADD_2 = ' + '''' + @acctStAdd2 + '''' + N' , '
+	END
+
+IF (@acctStAdd2 = N'Intentional' AND @acctStAdd2_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STREET_ADD_2 = NULL , '
+	END
+
+IF (@acctStAdd2 <> N'NULL' AND @acctStAdd2_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STREET_ADD_2 = '  + ''''  + @acctStAdd2 + '''' + N' , '
+	END
+
+-- Account City
+IF (@acctCity IS NOT NULL AND @acctCity <> N'NULL' AND @acctCity_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_CITY = ' + '''' + @acctCity + '''' + N' , '
+	END
+
+IF (@acctCity = N'NULL' AND @acctCity_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_CITY = NULL , '
+	END
+
+IF (@acctCity <> N'NULL' AND @acctCity_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_CITY = '  + ''''  + @acctCity + '''' + N' , '
+	END
+
+
+-- Account State
+IF (@acctState IS NOT NULL AND @acctState <> N'NULL' AND @acctState_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STATE = ' + '''' + @acctState + '''' + N' , '
+	END
+
+IF (@acctState = N'NULL' AND @acctState_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STATE = NULL , '
+	END
+
+IF (@acctState <> N'NULL' AND @acctState_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_STATE = '  + ''''  + @acctState + '''' + N' , '
+	END
+
+
+-- Account ZIP
+IF (@acctZip IS NOT NULL AND @acctZip <> N'NULL' AND @acctZip_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_ZIP = ' + @acctZip + N' , '
+	END
+
+IF (@acctZip = N'NULL' AND @acctZip_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_ZIP = NULL , '
+	END
+
+IF (@acctZip  <> N'NULL' AND @acctZip_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_ZIP = '  + @acctZip + N' , '
+	END
+
+-- Account PO Box
+IF (@acctPoBox IS NOT NULL AND @acctPoBox <> N'NULL' AND @acctPoBox_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_PO_BOX = ' + '''' + @acctPoBox + '''' + N' , '
+	END
+
+IF (@acctPoBox = N'NULL' AND @acctPoBox_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_PO_BOX = NULL , '
+	END
+
+IF (@acctPoBox <> N'NULL' AND @acctPoBox_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_PO_BOX = ' + ''''  + @acctPoBox + '''' + N' , '
+	END
+
+-- Account Date Start
+IF (@acctDtSt IS NOT NULL AND @acctDtSt <> N'NULL' AND @acctDtSt_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + '''' + @acctDtSt + '''' + N' , '
+	END
+
+IF (@acctDtSt = N'NULL' AND @acctDtSt_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = NULL , '
+	END
+
+IF (@acctDtSt <> N'NULL' AND @acctDtSt_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtSt + '''' + N' , '
+	END
+
+-- Account Date Renewal
+IF (@acctDtRe IS NOT NULL AND @acctDtRe <> N'NULL' AND @acctDtRe_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + '''' + @acctDtRe + '''' + N' , '
+	END
+
+IF (@acctDtRe = N'NULL' AND @acctDtRe_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = NULL , '
+	END
+
+IF (@acctDtRe <> N'NULL' AND @acctDtRe_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtRe + '''' + N' , '
+	END
+
+-- Account Type
+IF (@acctType is not null AND @acctType <> N'NULL' AND @acctType_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
+	END
+
+IF (@acctType = N'NULL' AND @acctType_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_TYPE = NULL'
+	END
+
+IF (@acctType  <> N'NULL' AND @acctType_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
+	END
+
+
+IF(RIGHT(@updStatement,2) = N', ')
 BEGIN
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
+SET @updStatement = LEFT(@updStatement,LEN(@updStatement) -1) + N' WHERE ACCOUNT_NUM = ' + '''' + @accountNum + '''' + ',';
 END
 ELSE
 BEGIN
-DROP TABLE mytemptable;
-CREATE TABLE mytemptable
-(ID INT IDENTITY(1,1),
-QUERY NVARCHAR(MAX));
+SET @updStatement += N' WHERE ACCOUNT_NUM = ' + '''' + @accountNum + '''' + ';';
 END
 
-
-DECLARE @mycurarray NVARCHAR(MAX)
-SET @mycurarray = (SELECT * FROM paca.StringSplit(REPLACE(REPLACE(@accountArray,'{',''),'}',''),','))
-
-/*
-INSERT INTO mytemptable (QUERY)
-SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@accountArray,',') x
-*/
-
-INSERT INTO mytemptable (QUERY)
-SELECT REPLACE(value,CHAR(58),' ' + CHAR(61) + ' '+'''')+'''' FROM STRING_SPLIT(@mycurarray,',') x
-
-
---SELECT * FROM mytemptable
-
-DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.ACCOUNTS SET ',
-@count INT = 1, @currentVal NVARCHAR(MAX),@rowCount INT
-
-SET @rowCount = (SELECT COUNT(QUERY) FROM mytemptable)
-
-WHILE @count <= @rowCount
-BEGIN
-SET @currentVal = (
-SELECT TOP 1 QUERY
-FROM mytemptable
-WHERE ID = @count
-)
-
-IF(@count = 1)
-  BEGIN
-  SET @updStatement += @currentVal +' '
-  END
-IF(@count <= @rowCount)
-  BEGIN
-  SET @updStatement += ',' + @currentVal +' '
-  END
-  
-SET @count += 1
-
-END
-
-SET @updStatement += ' WHERE ACCOUNT_NUM = ' + '''' + @accountNum + '''' + ';'
-
+BEGIN TRY
 BEGIN TRANSACTION
-EXECUTE(@updStatement);
+EXECUTE sp_executesql @updStatement, N'@val NVARCHAR(MAX) OUTPUT',@val OUTPUT
 COMMIT TRANSACTION
-
---Uncomment this to prevent the Temporay Table from persisting.
---DROP TABLE mytemptable;
-
 END TRY
 BEGIN CATCH
 ROLLBACK TRANSACTION
@@ -195,276 +456,12 @@ SELECT
   ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
 
--- Need to add in a method for determining the table we are using.
--- This is for when it is Table Agnostic.
-
 EXECUTE paca.getAccounts_v3 @accountNum
 
 RETURN;
-GO
-/*
-IF @accountItemToUpdate = N'ACCOUNT_HONORIFICS'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_HONORIFICS = CAST(@accountItemVal AS NVARCHAR(16))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-    SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
 
-IF @accountItemToUpdate = N'ACCOUNT_FIRST_NAME'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_FIRST_NAME = CAST(@accountItemVal AS NVARCHAR(128))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_LAST_NAME'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_LAST_NAME = CAST(@accountItemVal AS NVARCHAR(128))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_SUFFIX'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_SUFFIX = CAST(@accountItemVal AS NVARCHAR(16))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_STREET_ADD_1'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_STREET_ADD_1 = CAST(@accountItemVal AS NVARCHAR(128))
-        WHERE ACCOUNT_NUM = @accountNum
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_STREET_ADD_2'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_STREET_ADD_2 = CAST(@accountItemVal AS NVARCHAR(128))
-        WHERE ACCOUNT_NUM = @accountNum
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_CITY'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_CITY = CAST(@accountItemVal AS NVARCHAR(128))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_STATE'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_STATE = CAST(@accountItemVal AS NVARCHAR(16))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_ZIP'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_ZIP = CAST(@accountItemVal AS INT)
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_PO_BOX'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_PO_BOX = CAST(@accountItemVal AS NVARCHAR(128))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_DATE_START'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_DATE_START = CAST(@accountItemVal AS DATETIME), ACCOUNT_DATE_RENEWAL = DATEADD(YY,1,CAST(@accountItemVal AS DATETIME))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_DATE_RENEWAL'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_DATE_RENEWAL = CAST(@accountItemVal AS DATETIME)
-        WHERE ACCOUNT_NUM = @accountNum
-        COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-
-IF @accountItemToUpdate = N'ACCOUNT_TYPE'
-    BEGIN TRY
-    BEGIN TRANSACTION
-        UPDATE paca.ACCOUNTS
-        SET ACCOUNT_TYPE = CAST(@accountItemVal AS NVARCHAR(64))
-        WHERE ACCOUNT_NUM = @accountNum
-    COMMIT TRANSACTION
-    END TRY
-    BEGIN CATCH
-    ROLLBACK TRANSACTION
-        SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-    END CATCH
-END TRY
-
-
-BEGIN CATCH
--- We need to Rollback our transaction if it did not work.
-SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
-END CATCH
-
-RETURN;
 GO
 
-*/
 
 CREATE PROCEDURE paca.updateHome_v1
 @accountNum NVARCHAR(11),
