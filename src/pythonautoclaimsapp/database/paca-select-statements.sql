@@ -13,6 +13,10 @@
         2024-08-05: Reseolved Syntax issues with Stored Procedures.
         2024-08-05: Remove USE clause, because CREATE PROCEDURE (T-SQL)
           does not allow for statements above it.
+        2024-08-17: Updated a mispelled column name and updated accordingly within PythonAutoClaimsApp.sql
+        2024-08-18: Fixed spelling errors and updated SELECT STATEMENTS of Homes Stored Procedcure v3 to use
+          HOMES_INTERNAL_ID. This was necessary to prevent updates/deletes for hitting beyond their intended
+          target.
 
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -328,7 +332,8 @@ v.VEHICLE_MODEL,
 v.VEHICLE_ADDRESS1_GARAGED,
 v.VEHICLE_ADDRESS2_GARAGED,
 v.VEHICLE_VEHICLE_USE,
-v.VEHICLE_ANNUAL_MILEAGE
+v.VEHICLE_ANNUAL_MILEAGE,
+v.VEHICLE_VIN
 FROM paca.ACCOUNTS a
 INNER JOIN paca.VEHICLES v on v.VEHICLE_ACCOUNT_NUM = a.ACCOUNT_NUM
 WHERE ACCOUNT_NUM = @accountNum
@@ -369,6 +374,7 @@ a.ACCOUNT_STREET_ADD_2,
 a.ACCOUNT_SUFFIX,
 a.ACCOUNT_TYPE,
 a.ACCOUNT_ZIP,
+h.HOMES_INTERNAL_ID,
 h.HOMES_ADDRESS,
 h.HOMES_PREMIUM,
 h.HOMES_ADDRESS,
@@ -404,6 +410,7 @@ CREATE PROCEDURE paca.getHomes_v1
 AS
 BEGIN TRY
 SELECT
+HOMES_INTERNAL_ID,
 HOMES_ACCOUNT_NUM,
 HOMES_PREMIUM,
 HOMES_ADDRESS,
@@ -438,7 +445,7 @@ CREATE PROCEDURE paca.getHomes_v2
 AS
 BEGIN TRY
 SELECT
-HOMES_INTERAL_ID,
+HOMES_INTERNAL_ID,
 HOMES_ACCOUNT_NUM,
 HOMES_PREMIUM,
 HOMES_ADDRESS,
@@ -470,12 +477,11 @@ RETURN;
 GO
 
 CREATE PROCEDURE paca.getHomes_v3
-@accountNum NVARCHAR(11),
-@homeAddress NVARCHAR(128)
+@homeInternalID NVARCHAR(11)
 AS
 BEGIN TRY
 SELECT
-HOMES_INTERAL_ID,
+HOMES_INTERNAL_ID,
 HOMES_ACCOUNT_NUM,
 HOMES_PREMIUM,
 HOMES_ADDRESS,
@@ -490,8 +496,7 @@ HOMES_SEC2_PL,
 HOMES_SEC2_DPO,
 HOMES_SEC2_MPO
 FROM paca.HOMES
-WHERE HOMES_ACCOUNT_NUM = @accountNum
-AND HOMES_ADDRESS = @homeAddress
+WHERE HOMES_INTERNAL_ID = @homeInternalID
 END TRY
 BEGIN CATCH
 SELECT 

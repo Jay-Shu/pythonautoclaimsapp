@@ -26,6 +26,7 @@
 		2024-08-16: Updated Variable notes.
 		2024-08-16: Added new shell for updateHomes_v1. All future update stored procedures will utilize
 			this shell.
+		2024-08-18: Shell applied to updateVehicles_v1.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -484,7 +485,7 @@ SET NOCOUNT ON
 /*
 -- Test block, kept for historical reason.
 SET @json = N'[
-  {"ACCOUNT_NUM":"ICA00000003","ACCOUNT_HONORIFICS":"NULL","ACCOUNT_PO_BOX":"123 Easy Street","ACCOUNT_TYPE":"123"}
+  {"HOMES_INTENRAL_ID":"HOM00000001","HOMES_ACCOUNT_NUM":"ICA00000002","HOMES_SEC1_PER_PROP":"NULL","HOMES_SEC1_BU_SD":100.00,"HOMES_SEC1_SL":255.00}
 ]';
 */
 DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.HOMES SET'
@@ -806,7 +807,7 @@ SELECT
   ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
 
-EXECUTE paca.getAccounts_v3 @accountNum
+EXECUTE paca.getHomes_v3 @homeInternalID
 
 RETURN;
 
@@ -817,114 +818,275 @@ Update our vehicle
 */
 
 CREATE PROCEDURE updateVehicle_v1
-@accountNum NVARCHAR(11),
-@vehicleItemVal NVARCHAR(128),
-@vehicleItemToUpdate NVARCHAR(128),
-@vehicleVin NVARCHAR(32)
-
-/*
-    VEHICLE_ID INT IDENTITY(1,1),
-	VEHICLE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
-	VEHICLE_VIN NVARCHAR(32) NOT NULL,
-	VEHICLE_YEAR DATETIME NOT NULL,
-	VEHICLE_MAKE	NVARCHAR(32) NOT NULL,
-	VEHICLE_MODEL	NVARCHAR(65) NOT NULL,
-	VEHICLE_PREMIUM	DECIMAL(5,2) NOT NULL,
-	VEHICLE_ANNUAL_MILEAGE INT NULL,
-	VEHICLE_VEHICLE_USE	NVARCHAR(64) NOT NULL,
-	VEHICLE_ADDRESS1_GARAGED NVARCHAR(128) NOT NULL,
-	VEHICLE_ADDRESS2_GARAGED NVARCHAR(128) NULL,
-*/
+@json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON
-DECLARE @tempAccount NVARCHAR(11);
+/*
+-- Test block, kept for historical reason.
+SET @json = N'[
+  {"HOMES_INTENRAL_ID":"HOM00000001","HOMES_ACCOUNT_NUM":"ICA00000002","HOMES_SEC1_PER_PROP":"NULL","HOMES_SEC1_BU_SD":100.00,"HOMES_SEC1_SL":255.00}
+]';
+*/
+DECLARE @updStatement NVARCHAR(MAX) = N'UPDATE paca.VEHICLES SET'
+DECLARE @tempTable TABLE (
+	VEHICLE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
+	VEHICLE_VIN NVARCHAR(32) NOT NULL,
+	VEHICLE_YEAR INT NULL,
+	VEHICLE_MAKE	NVARCHAR(32) NULL,
+	VEHICLE_MODEL	NVARCHAR(65) NULL,
+	VEHICLE_PREMIUM	DECIMAL(5,2) NULL,
+	VEHICLE_ANNUAL_MILEAGE INT NULL,
+	VEHICLE_VEHICLE_USE	NVARCHAR(64) NULL,
+	VEHICLE_ADDRESS1_GARAGED NVARCHAR(128) NULL,
+	VEHICLE_ADDRESS2_GARAGED NVARCHAR(128) NULL)
+
+
+INSERT INTO @tempTable
+SELECT
+	VEHICLE_ACCOUNT_NUM,
+	VEHICLE_VIN,
+	VEHICLE_YEAR,
+	VEHICLE_MAKE,
+	VEHICLE_MODEL,
+	VEHICLE_PREMIUM,
+	VEHICLE_ANNUAL_MILEAGE,
+	VEHICLE_VEHICLE_USE,
+	VEHICLE_ADDRESS1_GARAGED,
+	VEHICLE_ADDRESS2_GARAGED
+FROM OPENJSON(@json) WITH (
+    VEHICLE_VIN NVARCHAR(32) 'strict $.VEHICLE_VIN',
+    VEHICLE_ACCOUNT_NUM NVARCHAR(11) 'strict $.VEHICLE_ACCOUNT_NUM',
+    VEHICLE_YEAR 	INT '$.VEHICLE_YEAR',
+	  VEHICLE_MAKE 	NVARCHAR(32) '$.VEHICLE_MAKE',
+	  VEHICLE_MODEL		NVARCHAR(65) '$.VEHICLE_MODEL',
+	  VEHICLE_PREMIUM DECIMAL(5,2) '$.VEHICLE_PREMIUM',
+	  VEHICLE_ANNUAL_MILEAGE INT '$.VEHICLE_ANNUAL_MILEAGE',
+	  VEHICLE_VEHICLE_USE		NVARCHAR(64) '$.VEHICLE_VEHICLE_USE',
+	  VEHICLE_ADDRESS1_GARAGED	NVARCHAR(128) '$.VEHICLE_ADDRESS1_GARAGED',
+	  VEHICLE_ADDRESS2_GARAGED	NVARCHAR(128) '$.VEHICLE_ADDRESS2_GARAGED'
+)
+;
+
+DECLARE
+@accountNum NVARCHAR(11) = (SELECT TOP 1 VEHICLE_ACCOUNT_NUM FROM @tempTable),
+@vehicleVin NVARCHAR(32) = (SELECT TOP 1 VEHICLE_VIN FROM @tempTable),
+@vehicleYear NVARCHAR(128) = (SELECT TOP 1 VEHICLE_YEAR FROM @tempTable),
+@vehicleMake NVARCHAR(32) = (SELECT TOP 1 VEHICLE_MAKE FROM @tempTable),
+@vehicleModel NVARCHAR(32) = (SELECT TOP 1 VEHICLE_MODEL FROM @tempTable),
+@vehiclePremium NVARCHAR(32) = (SELECT TOP 1 CAST(VEHICLE_PREMIUM AS NVARCHAR(32)) FROM @tempTable),
+@vehicleAnnualMileage NVARCHAR(32) = (SELECT TOP 1 CAST(VEHICLE_ANNUAL_MILEAGE AS NVARCHAR(32)) FROM @tempTable),
+@vehicleVehicleUse NVARCHAR(32) = (SELECT TOP 1 VEHICLE_VEHICLE_USE FROM @tempTable),
+@vehicleAddress1Garaged NVARCHAR(32) = (SELECT TOP 1 VEHICLE_ADDRESS1_GARAGED FROM @tempTable),
+@vehicleAddress2Garaged NVARCHAR(32) = (SELECT TOP 1 VEHICLE_ADDRESS2_GARAGED FROM @tempTable)
+
+DECLARE
+@vehicleVin_actual NVARCHAR(32) = (SELECT TOP 1 VEHICLE_VIN FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehicleYear_actual NVARCHAR(128) = (SELECT TOP 1 VEHICLE_YEAR FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehicleMake_actual NVARCHAR(32) = (SELECT TOP 1 VEHICLE_MAKE FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehicleModel_actual NVARCHAR(32) = (SELECT TOP 1 VEHICLE_MODEL FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehiclePremium_actual NVARCHAR(32) = (SELECT TOP 1 CAST(VEHICLE_PREMIUM AS NVARCHAR(32)) FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehicleAnnualMileage_actual NVARCHAR(32) = (SELECT TOP 1 CAST(VEHICLE_ANNUAL_MILEAGE AS NVARCHAR(32)) FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehicleVehicleUse_actual NVARCHAR(32) = (SELECT TOP 1 VEHICLE_VEHICLE_USE FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehicleAddress1Garaged_actual NVARCHAR(32) = (SELECT TOP 1 VEHICLE_ADDRESS1_GARAGED FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@vehicleAddress2Garaged_actual NVARCHAR(32) = (SELECT TOP 1 VEHICLE_ADDRESS2_GARAGED FROM paca.VEHICLES WHERE VEHICLE_VIN = @vehicleVin),
+@val UNIQUEIDENTIFIER = NEWID();
+
+/*
+IF (@acctH is null AND @acctH_actual is null)
+BEGIN
+SET @acctH = N'NULL';
+SET @updStatement += N' ACCOUNT_HONORIFICS = '   + @acctH + N' , '
+END
+*/
+/*
+Combinations:
+	1. IS NULL AND IS NULL. Does not need to be defined as no changes are made.
+	2. IS NOT NULL AND IS NULL
+	3. IS NOT NULL AND IS NOT NULL
+	4. IS NULL AND IS NOT NULL
+	5. Intentional Null
+*/
+
+
+-- Vehicle VIN
+IF (@vechicleVin IS NOT NULL AND @vechicleVin <> N'NULL' AND @vechicleVin_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_VIN = '+ '''' + @vechicleVin + '''' + N' , '
+	END
+
+/*
+We cannot have a VEHICLE_VIN as NULL. Therefore, this is not needed.
+IF (@vechicleVin = N'NULL' AND @vechicleVin_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_VIN = NULL , '
+	END
+*/
+
+
+IF (@vechicleVin  <> N'NULL' AND @vechicleVin_actual IS NOT NULL AND @vehicleVin <> @vechicleVin_actual)
+	BEGIN
+		SET @updStatement += N' VEHICLE_VIN = ' + ''''  + @vechicleVin + '''' + N' , '
+	END
+
+-- Vehicle Year
+IF (@vehicleYear is not null AND @vehicleYear <> N'NULL' AND @vehicleYear_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_YEAR = ' + @vehicleYear + N' , '
+	END
+
+IF (@vehicleYear = N'NULL' AND @vehicleYear_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_YEAR = NULL , '
+	END
+
+IF (@vehicleYear  <> N'NULL' AND @vehicleYear_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_YEAR = '  + @vehicleYear + N' , '
+	END
+
+-- Vehicle Make
+IF (@vehicleMake IS NOT NULL AND @vehicleMake <> N'NULL' AND @vehicleMake_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_MAKE = ' + @vehicleMake + N' , '
+	END
+
+IF (@vehicleMake = N'NULL' AND @vehicleMake_actual is not null)
+	BEGIN
+		SET @updStatement += N' VEHICLE_MAKE = NULL , '
+	END
+
+IF (@vehicleMake  <> N'NULL' AND @vehicleMake_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_MAKE = ' + ''''  + @vehicleMake + '''' + N' , '
+	END
+
+-- Vehicle Model
+IF (@vehicleModel IS NOT NULL AND @vehicleModel <> N'NULL' AND @vehicleModel_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_MODEL = '+ '''' + @vehicleModel + '''' + N' , '
+	END
+
+IF (@vehicleModel = N'NULL' AND @vehicleModel_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_MODEL = NULL , '
+	END
+
+IF (@vehicleModel <> N'NULL' AND @vehicleModel_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' VEHICLE_MODEL = ' + ''''  + @vehicleModel + '''' + N' , '
+	END
+
+-- Vehicle Premium
+IF (@homeSec1PerProp IS NOT NULL AND @homeSec1PerProp <> N'NULL' AND @homeSec1PerProp_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_PER_PROP = ' + @homeSec1PerProp + N' , '
+	END
+
+IF (@homeSec1PerProp = N'NULL' AND @homeSec1PerProp_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_PER_PROP = NULL , ';
+	END
+
+IF (@homeSec1PerProp <> N'NULL' AND @homeSec1PerProp_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_PER_PROP = '  + @homeSec1PerProp + N' , ';
+	END
+
+-- Vehicle Annual Mileage
+IF (@homeSec1LOU IS NOT NULL AND @homeSec1LOU <> N'NULL' AND @homeSec1LOU_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_LOU = ' + @homeSec1LOU + N' , ';
+	END
+
+IF (@homeSec1LOU = N'Intentional' AND @homeSec1LOU_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_LOU = NULL , ';
+	END
+
+IF (@homeSec1LOU <> N'NULL' AND @homeSec1LOU_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_LOU = '  + @homeSec1LOU + N' , ';
+	END
+
+-- Vehicle Vehicle Use
+IF (@homeSec1FDSC IS NOT NULL AND @homeSec1FDSC <> N'NULL' AND @homeSec1FDSC_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_FD_SC = ' + @homeSec1FDSC + N' , ';
+	END
+
+IF (@homeSec1FDSC = N'NULL' AND @homeSec1FDSC_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_FD_SC = NULL , ';
+	END
+
+IF (@homeSec1FDSC <> N'NULL' AND @homeSec1FDSC_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_FD_SC = '  + @homeSec1FDSC + N' , ';
+	END
+
+
+-- Vehicle Address 1 Garaged
+IF (@homeSec1SL IS NOT NULL AND @homeSec1SL <> N'NULL' AND @homeSec1SL_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_SL = ' + @homeSec1SL + N' , ';
+	END
+
+IF (@homeSec1SL = N'NULL' AND @homeSec1SL_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_SL = NULL , ';
+	END
+
+IF (@homeSec1SL <> N'NULL' AND @homeSec1SL_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_SL = '  + @homeSec1SL + N' , ';
+	END
+
+
+-- Vehicle Address 2 Garaged
+IF (@homeSec1BUSD IS NOT NULL AND @homeSec1BUSD <> N'NULL' AND @acctZip_actual IS NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_BU_SD = ' + @homeSec1BUSD;
+	END
+
+IF (@homeSec1BUSD = N'NULL' AND @homeSec1BUSD_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_BU_SD = NULL';
+	END
+
+IF (@homeSec1BUSD  <> N'NULL' AND @homeSec1BUSD_actual IS NOT NULL)
+	BEGIN
+		SET @updStatement += N' HOMES_SEC1_BU_SD = '  + @homeSec1BUSD ;
+	END
+
+
+
+
+IF(RIGHT(@updStatement,2) = N', ')
+BEGIN
+SET @updStatement = LEFT(@updStatement,LEN(@updStatement) -1) + N' WHERE VEHICLE_VIN = ' + '''' + @vehicleVin_actual + '''' + ';';
+END
+ELSE
+BEGIN
+SET @updStatement += N' WHERE VEHICLE_VIN = ' + '''' + @vehicleVin_actual + '''' + ';';
+END
+
 BEGIN TRY
-SET @tempAccount = @accountNum
-
-IF (@vehicleItemToUpdate = N'VEHICLE_ACCOUNT_NUM')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_ACCOUNT_NUM = CAST(@vehicleItemVal AS NVARCHAR(11))
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_YEAR')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_YEAR = CAST(@vehicleItemVal AS INT)
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_MAKE')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_MAKE = CAST(@vehicleItemVal AS NVARCHAR(32))
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_MODEL')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_MODEL = CAST(@vehicleItemVal AS NVARCHAR(65))
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_PREMIUM')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_PREMIUM = CAST(@vehicleItemVal AS DECIMAL(5,2))
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_ANNUAL_MILEAGE')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_ANNUAL_MILEAGE = CAST(@vehicleItemVal AS INT)
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_VEHICLE_USE')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_VEHICLE_USE = CAST(@vehicleItemVal AS NVARCHAR(64))
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_ADDRESS1_GARAGED')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_ADDRESS1_GARAGED = CAST(@vehicleItemVal AS NVARCHAR(128))
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
-IF (@vehicleItemToUpdate= N'VEHICLE_ADDRESS2_GARAGED')
-BEGIN
-    UPDATE paca.VEHICLES
-    SET VEHICLE_ADDRESS2_GARAGED = CAST(@vehicleItemVal AS NVARCHAR(128))
-    WHERE VEHICLE_ACCOUNT_NUM = @tempAccount
-    AND VEHICLE_VIN = @vehicleVin
-END
-
+BEGIN TRANSACTION
+EXECUTE sp_executesql @updStatement, N'@val NVARCHAR(MAX) OUTPUT',@val OUTPUT
 COMMIT TRANSACTION
 END TRY
 BEGIN CATCH
 ROLLBACK TRANSACTION
 SELECT 
-        ERROR_NUMBER() AS ErrorNumber
-        ,ERROR_SEVERITY() AS ErrorSeverity
-        ,ERROR_STATE() AS ErrorState
-        ,ERROR_PROCEDURE() AS ErrorProcedure
-        ,ERROR_LINE() AS ErrorLine
-        ,ERROR_MESSAGE() AS ErrorMessage;
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
+
+EXECUTE paca.getHomes_v3 @homeInternalID
 
 RETURN;
 

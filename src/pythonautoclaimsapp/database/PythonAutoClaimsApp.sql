@@ -41,6 +41,7 @@
 		2024-08-16: Fixed note regarding ALTER ROLE from it's previous ALTER SERVER ROLE. SERVER is not a keyword used here.
 		2024-08-17: Commented out problematic SET Clauses. These will need more research.
 		2024-08-17: Removed old SET Clauses.
+		2024-08-17: Updated BEGIN CATCH...END CATCH Blocks with SELECT Statement instead of original RAISEERROR()
 		
 
     TO DO (Requested):
