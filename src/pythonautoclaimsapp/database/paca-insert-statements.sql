@@ -178,7 +178,7 @@ GO
 CREATE PROCEDURE paca.addVehicle_v1
 @vehicleAcctNum NVARCHAR(11),
 @vehicleVin NVARCHAR(32),
-@vehicleYear DATETIME,
+@vehicleYear DATETIME,  -- Change to INT if year only is needed
 @vehicleMake NVARCHAR(32),
 @vehicleModel NVARCHAR(65),
 @vehiclePremium DECIMAL(5,2),
@@ -188,6 +188,7 @@ CREATE PROCEDURE paca.addVehicle_v1
 @vehicleAddress2Garaged NVARCHAR(128)
 AS
 SET NOCOUNT ON
+
 /*
 
 VEHICLE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
@@ -202,31 +203,33 @@ VEHICLE_ADDRESS1_GARAGED NVARCHAR(128) NOT NULL,
 VEHICLE_ADDRESS2_GARAGED NVARCHAR(128) NULL
 
 */
+
 BEGIN TRY
-BEGIN TRANSACTION
-  INSERT INTO VEHICLES VALUES (@vehicleAcctNum,
-@vehicleVin,
-@vehicleYear,
-@vehicleMake,
-@vehicleModel,
-@vehiclePremium,
-@vehicleAnnualMileage,
-@vehicleVehicleUse,
-@vehicleAddress1Garaged,
-@vehicleAddress2Garaged)
+  BEGIN TRANSACTION
+    INSERT INTO VEHICLES VALUES (
+      @vehicleAcctNum,
+      @vehicleVin,
+      YEAR(@vehicleYear),  -- Use YEAR() function if the column is INT
+      @vehicleMake,
+      @vehicleModel,
+      @vehiclePremium,
+      @vehicleAnnualMileage,
+      @vehicleVehicleUse,
+      @vehicleAddress1Garaged,
+      @vehicleAddress2Garaged
+    )
   COMMIT TRANSACTION
 END TRY
 BEGIN CATCH
-ROLLBACK TRANSACTION
+  ROLLBACK TRANSACTION
   SELECT 
-    ERROR_NUMBER() AS ErrorNumber
-   ,ERROR_SEVERITY() AS ErrorSeverity
-   ,ERROR_STATE() AS ErrorState
-   ,ERROR_PROCEDURE() AS ErrorProcedure
-   ,ERROR_LINE() AS ErrorLine
-   ,ERROR_MESSAGE() AS ErrorMessage;
+    ERROR_NUMBER() AS ErrorNumber,
+    ERROR_SEVERITY() AS ErrorSeverity,
+    ERROR_STATE() AS ErrorState,
+    ERROR_PROCEDURE() AS ErrorProcedure,
+    ERROR_LINE() AS ErrorLine,
+    ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
-
 RETURN;
 
 GO
