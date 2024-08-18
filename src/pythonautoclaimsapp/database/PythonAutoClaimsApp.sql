@@ -40,6 +40,7 @@
 		2024-08-13: Added HOMES_INTERNAL_ID to give homes a Unique Identifier to prevent updates from hitting incorrect targets.
 		2024-08-16: Fixed note regarding ALTER ROLE from it's previous ALTER SERVER ROLE. SERVER is not a keyword used here.
 		2024-08-17: Commented out problematic SET Clauses. These will need more research.
+		2024-08-17: Removed old SET Clauses.
 		
 
     TO DO (Requested):
@@ -96,6 +97,7 @@
 		28. SET PARAMETERIZATION (Transact-SQL), https://learn.microsoft.com/en-us/sql/relational-databases/performance/specify-query-parameterization-behavior-by-using-plan-guides?view=sql-server-ver16
 		29. Set the page_verify database option to checksum, https://learn.microsoft.com/en-us/sql/relational-databases/policy-based-management/set-the-page-verify-database-option-to-checksum?view=sql-server-ver16
 		30. Best practices for persistent database connections in Python when using Flask, https://stackoverflow.com/questions/55523299/best-practices-for-persistent-database-connections-in-python-when-using-flask
+		31. Indexes on computed columns, https://learn.microsoft.com/en-us/sql/relational-databases/indexes/indexes-on-computed-columns?view=sql-server-ver16
 
 
 	Author Notes:
@@ -162,13 +164,16 @@ GO
 
 USE PACA
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+-- When using computed columns with indexes the following must be set to ON;
 SET ANSI_NULLS ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
 SET ARITHABORT ON;
---SET TRUSTWORTHY OFF; --THIS IS RECOMMENDED TO BE OFF TO PREVENT MALICIOUS ASSEMBLIES.
---SET ALLOW_SNAPSHOT_ISOLATION ON;
-SET ANSI_NULLS ON; -- Microsoft Documentation, and referenced Citation above.
---SET CONCAT_NULL_YIELDS_NULL OFF;
---SET PAGE_VERIFY CHECKSUM; --Microsoft Best Practices Recommendation.
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET QUOTED_IDENTIFIER ON;
+-- SET NUMERIC_ROUNDABORT OFF; This must be set to off for Computed Columns.
+
 GO
 
 ALTER DATABASE [PACA]
@@ -464,7 +469,7 @@ BEGIN TRY
 CREATE TABLE paca.HOMES
 (
 	HOMES_ID INT IDENTITY(1,1),
-	HOMES_INTERAL_ID AS N'HOM' + RIGHT('00000000' + CAST(HOMES_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
+	HOMES_INTERNAL_ID AS N'HOM' + RIGHT('00000000' + CAST(HOMES_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
 	HOMES_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
 	HOMES_PREMIUM DECIMAL(10,2) NOT NULL,
 	HOMES_ADDRESS NVARCHAR(128) NOT NULL,
@@ -654,7 +659,8 @@ CREATE TABLE paca.VEHICLE_COVERAGES
 	CONSTRAINT Fk_VehicleCov1 FOREIGN KEY (VEHICLES_COVERAGE_ACCOUNT_NUM)
 	REFERENCES paca.ACCOUNTS (ACCOUNT_NUM)
 	ON DELETE CASCADE
-	ON UPDATE CASCADE
+	ON UPDATE CASCADE,
+	CHECK (LEN(VEHICLES_COVERAGE_ACCOUNT_NUM) = 11)
 ) ON [PRIMARY]
 END TRY
 BEGIN CATCH
@@ -667,8 +673,13 @@ BEGIN CATCH
 		role or users with ALTER TRACE permissions.
 */
 
-RAISERROR(N'Unable to Create the table VEHICLE_COVERAGES.',15,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
@@ -694,7 +705,8 @@ CREATE TABLE paca.VEHICLE_CLAIMS
 	REFERENCES paca.ACCOUNTS (ACCOUNT_NUM)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE,
-	CHECK (LEN(VEHICLE_CLAIMS_ACCOUNT_NUM) = 11)
+	CHECK (LEN(VEHICLE_CLAIMS_ACCOUNT_NUM) = 11),
+	CHECK (LEN(VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER) = 11) --This may or may not work, remove if it causes issues.
 ) ON [PRIMARY]
 END TRY
 BEGIN CATCH

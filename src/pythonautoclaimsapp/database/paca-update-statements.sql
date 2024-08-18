@@ -620,7 +620,7 @@ IF (@homeAddress  <> N'NULL' AND @homeAddress_actual IS NOT NULL)
 -- Account Last Name
 IF (@homeSec1DW IS NOT NULL AND @homeSec1DW <> N'NULL' AND @homeSec1DW_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_DW = ' + '''' + @homeSec1DW + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_DW = ' + @homeSec1DW + N' , '
 	END
 
 IF (@homeSec1DW = N'NULL' AND @homeSec1DW_actual is not null)
@@ -630,179 +630,164 @@ IF (@homeSec1DW = N'NULL' AND @homeSec1DW_actual is not null)
 
 IF (@homeSec1DW  <> N'NULL' AND @homeSec1DW_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_DW = '  + ''''  + @homeSec1DW + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_DW = '   + @homeSec1DW + N' , '
 	END
 
 -- Account Suffix
-IF (@acctSuf IS NOT NULL AND @acctSuf <> N'NULL' AND @acctSuf_actual IS NULL)
+IF (@homeSec1DWEX IS NOT NULL AND @homeSec1DWEX <> N'NULL' AND @acctSuf_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_SUFFIX = ' + '''' + @acctSuf + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_DWEX = ' + @homeSec1DWEX + N' , '
 	END
 
-IF (@acctSuf = N'NULL' AND @acctSuf_actual IS NOT NULL)
+IF (@homeSec1DWEX = N'NULL' AND @homeSec1DWEX_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_SUFFIX = NULL , '
+		SET @updStatement += N' HOMES_SEC1_DWEX = NULL , '
 	END
 
-IF (@acctSuf <> N'NULL' AND @acctSuf_actual IS NOT NULL)
+IF (@homeSec1DWEX <> N'NULL' AND @homeSec1DWEX_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_SUFFIX = '  + ''''  + @acctSuf + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_DWEX = '  + @homeSec1DWEX + N' , '
 	END
 
 -- Account Street Address 1
-IF (@acctStAdd1 IS NOT NULL AND @acctStAdd1 <> N'NULL' AND @acctStAdd1_actual IS NULL)
+IF (@homeSec1PerProp IS NOT NULL AND @homeSec1PerProp <> N'NULL' AND @homeSec1PerProp_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STREET_ADD_1 = ' + '''' + @acctStAdd1 + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_PER_PROP = ' + @homeSec1PerProp + N' , '
 	END
 
-IF (@acctStAdd1 = N'NULL' AND @acctStAdd1_actual IS NOT NULL)
+IF (@homeSec1PerProp = N'NULL' AND @homeSec1PerProp_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STREET_ADD_1 = NULL , '
+		SET @updStatement += N' HOMES_SEC1_PER_PROP = NULL , ';
 	END
 
-IF (@acctStAdd1 <> N'NULL' AND @acctStAdd1_actual IS NOT NULL)
+IF (@homeSec1PerProp <> N'NULL' AND @homeSec1PerProp_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STREET_ADD_1 = '  + ''''  + @acctStAdd1 + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_PER_PROP = '  + @homeSec1PerProp + N' , ';
 	END
 
 -- Account Street Address 2
-IF (@acctStAdd2 IS NOT NULL AND @acctStAdd2 <> N'NULL' AND @acctStAdd2_actual IS NULL)
+IF (@homeSec1LOU IS NOT NULL AND @homeSec1LOU <> N'NULL' AND @homeSec1LOU_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STREET_ADD_2 = ' + '''' + @acctStAdd2 + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_LOU = ' + @homeSec1LOU + N' , ';
 	END
 
-IF (@acctStAdd2 = N'Intentional' AND @acctStAdd2_actual IS NOT NULL)
+IF (@homeSec1LOU = N'Intentional' AND @homeSec1LOU_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STREET_ADD_2 = NULL , '
+		SET @updStatement += N' HOMES_SEC1_LOU = NULL , ';
 	END
 
-IF (@acctStAdd2 <> N'NULL' AND @acctStAdd2_actual IS NOT NULL)
+IF (@homeSec1LOU <> N'NULL' AND @homeSec1LOU_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STREET_ADD_2 = '  + ''''  + @acctStAdd2 + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_LOU = '  + @homeSec1LOU + N' , ';
 	END
 
 -- Account City
-IF (@acctCity IS NOT NULL AND @acctCity <> N'NULL' AND @acctCity_actual IS NULL)
+IF (@homeSec1FDSC IS NOT NULL AND @homeSec1FDSC <> N'NULL' AND @homeSec1FDSC_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_CITY = ' + '''' + @acctCity + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_FD_SC = ' + @homeSec1FDSC + N' , ';
 	END
 
-IF (@acctCity = N'NULL' AND @acctCity_actual IS NOT NULL)
+IF (@homeSec1FDSC = N'NULL' AND @homeSec1FDSC_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_CITY = NULL , '
+		SET @updStatement += N' HOMES_SEC1_FD_SC = NULL , ';
 	END
 
-IF (@acctCity <> N'NULL' AND @acctCity_actual IS NOT NULL)
+IF (@homeSec1FDSC <> N'NULL' AND @homeSec1FDSC_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_CITY = '  + ''''  + @acctCity + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_FD_SC = '  + @homeSec1FDSC + N' , ';
 	END
 
 
 -- Account State
-IF (@acctState IS NOT NULL AND @acctState <> N'NULL' AND @acctState_actual IS NULL)
+IF (@homeSec1SL IS NOT NULL AND @homeSec1SL <> N'NULL' AND @homeSec1SL_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STATE = ' + '''' + @acctState + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_SL = ' + @homeSec1SL + N' , ';
 	END
 
-IF (@acctState = N'NULL' AND @acctState_actual IS NOT NULL)
+IF (@homeSec1SL = N'NULL' AND @homeSec1SL_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STATE = NULL , '
+		SET @updStatement += N' HOMES_SEC1_SL = NULL , ';
 	END
 
-IF (@acctState <> N'NULL' AND @acctState_actual IS NOT NULL)
+IF (@homeSec1SL <> N'NULL' AND @homeSec1SL_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_STATE = '  + ''''  + @acctState + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC1_SL = '  + @homeSec1SL + N' , ';
 	END
 
 
 -- Account ZIP
-IF (@acctZip IS NOT NULL AND @acctZip <> N'NULL' AND @acctZip_actual IS NULL)
+IF (@homeSec1BUSD IS NOT NULL AND @homeSec1BUSD <> N'NULL' AND @acctZip_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_ZIP = ' + @acctZip + N' , '
+		SET @updStatement += N' HOMES_SEC1_BU_SD = ' + @homeSec1BUSD + N' , ';
 	END
 
-IF (@acctZip = N'NULL' AND @acctZip_actual IS NOT NULL)
+IF (@homeSec1BUSD = N'NULL' AND @homeSec1BUSD_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_ZIP = NULL , '
+		SET @updStatement += N' HOMES_SEC1_BU_SD = NULL , ';
 	END
 
-IF (@acctZip  <> N'NULL' AND @acctZip_actual IS NOT NULL)
+IF (@homeSec1BUSD  <> N'NULL' AND @homeSec1BUSD_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_ZIP = '  + @acctZip + N' , '
+		SET @updStatement += N' HOMES_SEC1_BU_SD = '  + @homeSec1BUSD + N' , ';
 	END
 
 -- Account PO Box
-IF (@acctPoBox IS NOT NULL AND @acctPoBox <> N'NULL' AND @acctPoBox_actual IS NULL)
+IF (@homeSec2PL IS NOT NULL AND @homeSec2PL <> N'NULL' AND @homeSec2PL_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_PO_BOX = ' + '''' + @acctPoBox + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC2_PL = ' + '''' + @homeSec2PL + '''' + N' , '
 	END
 
-IF (@acctPoBox = N'NULL' AND @acctPoBox_actual IS NOT NULL)
+IF (@homeSec2PL = N'NULL' AND @homeSec2PL_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_PO_BOX = NULL , '
+		SET @updStatement += N' HOMES_SEC2_PL = NULL , '
 	END
 
-IF (@acctPoBox <> N'NULL' AND @acctPoBox_actual IS NOT NULL)
+IF (@homeSec2PL <> N'NULL' AND @homeSec2PL_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_PO_BOX = ' + ''''  + @acctPoBox + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC2_PL = ' + ''''  + @homeSec2PL + '''' + N' , '
 	END
 
 -- Account Date Start
-IF (@acctDtSt IS NOT NULL AND @acctDtSt <> N'NULL' AND @acctDtSt_actual IS NULL)
+IF (@homeSec2DPO IS NOT NULL AND @homeSec2DPO <> N'NULL' AND @acctDtSt_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_DATE_START = ' + '''' + @acctDtSt + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC2_DPO = ' + @homeSec2DPO + N' , '
 	END
 
-IF (@acctDtSt = N'NULL' AND @acctDtSt_actual IS NOT NULL)
+IF (@homeSec2DPO = N'NULL' AND @homeSec2DPO_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_DATE_START = NULL , '
+		SET @updStatement += N' HOMES_SEC2_DPO = NULL , '
 	END
 
-IF (@acctDtSt <> N'NULL' AND @acctDtSt_actual IS NOT NULL)
+IF (@homeSec2DPO <> N'NULL' AND @homeSec2DPO_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtSt + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC2_DPO = '  + @homeSec2DPO + N' , '
 	END
 
 -- Account Date Renewal
-IF (@acctDtRe IS NOT NULL AND @acctDtRe <> N'NULL' AND @acctDtRe_actual IS NULL)
+IF (@homeSec2MPO IS NOT NULL AND @homeSec2MPO <> N'NULL' AND @homeSec2MPO_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_DATE_START = ' + '''' + @acctDtRe + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC2_MPO = ' + @homeSec2MPO
 	END
 
-IF (@acctDtRe = N'NULL' AND @acctDtRe_actual IS NOT NULL)
+IF (@homeSec2MPO = N'NULL' AND @homeSec2MPO_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_DATE_START = NULL , '
+		SET @updStatement += N' HOMES_SEC2_MPO = NULL '
 	END
 
-IF (@acctDtRe <> N'NULL' AND @acctDtRe_actual IS NOT NULL)
+IF (@homeSec2MPO <> N'NULL' AND @homeSec2MPO_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' ACCOUNT_DATE_START = ' + ''''  + @acctDtRe + '''' + N' , '
+		SET @updStatement += N' HOMES_SEC2_MPO = '  + @homeSec2MPO
 	END
 
--- Account Type
-IF (@acctType IS NOT NULL AND @acctType <> N'NULL' AND @acctType_actual IS NULL)
-	BEGIN
-		SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
-	END
-
-IF (@acctType = N'NULL' AND @acctType_actual IS NOT NULL)
-	BEGIN
-		SET @updStatement += N' ACCOUNT_TYPE = NULL'
-	END
-
-IF (@acctType  <> N'NULL' AND @acctType_actual IS NOT NULL)
-	BEGIN
-		SET @updStatement += N' ACCOUNT_TYPE = ' + '''' + @acctType + ''''
-	END
 
 
 IF(RIGHT(@updStatement,2) = N', ')
 BEGIN
-SET @updStatement = LEFT(@updStatement,LEN(@updStatement) -1) + N' WHERE ACCOUNT_NUM = ' + '''' + @accountNum + '''' + ';';
+SET @updStatement = LEFT(@updStatement,LEN(@updStatement) -1) + N' WHERE HOMES_INTERNAL_ID = ' + '''' + @homeInternalID + '''' + ';';
 END
 ELSE
 BEGIN
-SET @updStatement += N' WHERE ACCOUNT_NUM = ' + '''' + @accountNum + '''' + ';';
+SET @updStatement += N' WHERE HOMES_INTERNAL_ID = ' + '''' + @homeInternalID + '''' + ';';
 END
 
 BEGIN TRY
