@@ -37,6 +37,9 @@
 		2024-08-07: SET ALLOW_SNAPSHOT_ISOLATION ON; SET CONCAT_NULL_YIELDS_NULL ON; SET PARAMETERIZATION ON; SET PAGE_VERIFY CHECKSUM;
 		2024-08-09: Adding potential usage for database persistence with Flask. Need to test with pyodbc first.
 		2024-08-09: Updated VEHICLE_YEAR from datatype DATETIME to datatype INT. This makes more sense.
+		2024-08-13: Added HOMES_INTERNAL_ID to give homes a Unique Identifier to prevent updates from hitting incorrect targets.
+		2024-08-16: Fixed note regarding ALTER ROLE from it's previous ALTER SERVER ROLE. SERVER is not a keyword used here.
+		2024-08-17: Commented out problematic SET Clauses. These will need more research.
 		
 
     TO DO (Requested):
@@ -161,11 +164,11 @@ USE PACA
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SET ANSI_NULLS ON;
 SET ARITHABORT ON;
-SET TRUSTWORTHY OFF; --THIS IS RECOMMENDED TO BE OFF TO PREVENT MALICIOUS ASSEMBLIES.
-SET ALLOW_SNAPSHOT_ISOLATION ON;
+--SET TRUSTWORTHY OFF; --THIS IS RECOMMENDED TO BE OFF TO PREVENT MALICIOUS ASSEMBLIES.
+--SET ALLOW_SNAPSHOT_ISOLATION ON;
 SET ANSI_NULLS ON; -- Microsoft Documentation, and referenced Citation above.
-SET CONCAT_NULL_YIELDS_NULL OFF;
-SET PAGE_VERIFY CHECKSUM; --Microsoft Best Practices Recommendation.
+--SET CONCAT_NULL_YIELDS_NULL OFF;
+--SET PAGE_VERIFY CHECKSUM; --Microsoft Best Practices Recommendation.
 GO
 
 ALTER DATABASE [PACA]
@@ -213,7 +216,7 @@ GRANT VIEW SERVER STATE TO pacauser;
 --GRANT CREATE ENDPOINT TO pacauser
 GO
 
--- sp_addrolemember and sp_addsrvrolemember have been replaced with ALTER SERVER ROLE.
+-- sp_addrolemember and sp_addsrvrolemember have been replaced with ALTER ROLE.
 
 USE PACA
 
@@ -282,9 +285,13 @@ BEGIN CATCH
 		role or users with ALTER TRACE permissions.
 
 */
-
-RAISERROR(N'Unable to Create the table ACCOUNTS.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 GO
 
@@ -308,7 +315,7 @@ GO
 			(This means ONLY ONE for the ENTIRE TABLE).
 		It has the natural ability to store data on the disk.
 **/
-
+EXECUTE AS LOGIN = N'pacauser'
 BEGIN TRY
 CREATE INDEX account_idx ON paca.ACCOUNTS(ACCOUNT_NUM ASC,ACCOUNT_FIRST_NAME)
 	WITH (ALLOW_ROW_LOCKS = ON)
@@ -325,8 +332,13 @@ BEGIN CATCH
 
 */
 
-RAISERROR(N'Unable to Create the INDEX account_idx.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 GO
 
@@ -347,8 +359,13 @@ BEGIN CATCH
 
 */
 
-RAISERROR(N'Unable to Create the account_idx2.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 GO
 
@@ -368,9 +385,13 @@ BEGIN CATCH
 		role or users with ALTER TRACE permissions.
 
 */
-
-RAISERROR(N'Unable to Create the INDEX account_idx3.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
@@ -404,7 +425,7 @@ CREATE TABLE paca.VEHICLES
 	VEHICLE_ADDRESS2_GARAGED NVARCHAR(128) NULL,
 	CONSTRAINT PK_Vehicles PRIMARY KEY CLUSTERED (VEHICLE_VIN),
 	CONSTRAINT FK_Vehicles1 FOREIGN KEY (VEHICLE_ACCOUNT_NUM)
-	REFERENCES ACCOUNTS (ACCOUNT_NUM)
+	REFERENCES paca.ACCOUNTS (ACCOUNT_NUM)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 ) ON [PRIMARY]
@@ -420,8 +441,13 @@ BEGIN CATCH
 
 */
 
-RAISERROR(N'Unable to Create the table VEHICLES.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
@@ -438,7 +464,7 @@ BEGIN TRY
 CREATE TABLE paca.HOMES
 (
 	HOMES_ID INT IDENTITY(1,1),
-	HOMES_INTERAL_ID AS N'HOM' + RIGHT('00000000' + CAST(ACCOUNT_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
+	HOMES_INTERAL_ID AS N'HOM' + RIGHT('00000000' + CAST(HOMES_ID AS NVARCHAR(8)),8) PERSISTED NOT NULL,
 	HOMES_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
 	HOMES_PREMIUM DECIMAL(10,2) NOT NULL,
 	HOMES_ADDRESS NVARCHAR(128) NOT NULL,
@@ -454,7 +480,7 @@ CREATE TABLE paca.HOMES
 	HOMES_SEC2_MPO DECIMAL(12,2) NULL,
 	CONSTRAINT PK_Homes PRIMARY KEY CLUSTERED (HOMES_ID),
 	CONSTRAINT FK_HomesAccNum FOREIGN KEY (HOMES_ACCOUNT_NUM)
-	REFERENCES ACCOUNTS (ACCOUNT_NUM)
+	REFERENCES paca.ACCOUNTS (ACCOUNT_NUM)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 ) ON [PRIMARY]
@@ -469,9 +495,13 @@ BEGIN CATCH
 		role or users with ALTER TRACE permissions.
 
 */
-
-RAISERROR(N'Unable to Create the table HOMES.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 GO
 
@@ -490,8 +520,13 @@ BEGIN CATCH
 		role or users with ALTER TRACE permissions.
 */
 
-RAISERROR(N'Unable to Create the INDEX homes_idx.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 GO
 
@@ -528,8 +563,13 @@ BEGIN CATCH
 
 */
 
-RAISERROR(N'Unable to Create the table POLICIES.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
@@ -612,7 +652,7 @@ CREATE TABLE paca.VEHICLE_COVERAGES
 	VEHICLES_COVERAGE_ROADSIDE_TOW DECIMAL(10,2) NULL,
 	CONSTRAINT PK_VehicleCov PRIMARY KEY CLUSTERED (VEHICLES_COVERAGE_ID),
 	CONSTRAINT Fk_VehicleCov1 FOREIGN KEY (VEHICLES_COVERAGE_ACCOUNT_NUM)
-	REFERENCES ACCOUNTS (ACCOUNT_NUM)
+	REFERENCES paca.ACCOUNTS (ACCOUNT_NUM)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 ) ON [PRIMARY]
@@ -627,7 +667,7 @@ BEGIN CATCH
 		role or users with ALTER TRACE permissions.
 */
 
-RAISERROR(N'Unable to Create the table VEHICLE_COVERAGES.',20,-1)
+RAISERROR(N'Unable to Create the table VEHICLE_COVERAGES.',15,-1)
 	WITH LOG;
 END CATCH;
 
@@ -651,7 +691,7 @@ CREATE TABLE paca.VEHICLE_CLAIMS
 	VEHICLE_CLAIMS_TOW_COMPANY NVARCHAR(128) NULL,
 	CONSTRAINT PK_VehicleClaim PRIMARY KEY CLUSTERED (VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER),
 	CONSTRAINT Fk_VehicleClaim1 FOREIGN KEY (VEHICLE_CLAIMS_ACCOUNT_NUM)
-	REFERENCES ACCOUNTS (ACCOUNT_NUM)
+	REFERENCES paca.ACCOUNTS (ACCOUNT_NUM)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE,
 	CHECK (LEN(VEHICLE_CLAIMS_ACCOUNT_NUM) = 11)
@@ -667,8 +707,13 @@ BEGIN CATCH
 		role or users with ALTER TRACE permissions.
 */
 
-RAISERROR(N'Unable to Create the table VEHICLE_CLAIMS.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
@@ -718,8 +763,13 @@ BEGIN CATCH
 
 */
 
-RAISERROR(N'Unable to perform Accounts inserts.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
@@ -793,8 +843,13 @@ INSERT INTO paca.HOMES VALUES (@jpauljones,1374.28,N'1352 Zeppelin Ct., Kansas C
 INSERT INTO paca.VEHICLES VALUES (@jpauljones,N'5NPEB4AC0BH281770',2011,N'Hyundai',N'Sonata 2.4l',214.60,10000,N'Work, Pleasure, or drive to work.',N'1346 Zeppelin Ct., Kansas City, Kansas, 66025',NULL);
 END TRY
 BEGIN CATCH
-RAISERROR(N'Unable to perform Vehicles and Homes inserts.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
@@ -820,8 +875,13 @@ INSERT INTO paca.POLICIES VALUES (N'Car and Home Bundle - Advanced',284,N'This i
 INSERT INTO paca.POLICIES VALUES (N'Car and Home Bundle - Premium',496,N'This is the best home and car policy.');
 END TRY
 BEGIN CATCH
-RAISERROR(N'Unable to perform Policy inserts.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 GO
 
@@ -893,8 +953,13 @@ INSERT INTO paca.VEHICLE_COVERAGES VALUES (@jpauljones,@vehicle_count,10000.00,5
 
 END TRY
 BEGIN CATCH
-RAISERROR(N'Unable to perform Policy inserts.',20,-1)
-	WITH LOG;
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
 GO
