@@ -16,15 +16,16 @@
         2024-08-18: Update VEHICLE_YEAR datatype to INT from DATETIME.
         2024-08-18: Overhaul of addAccount_v1. Serialization and Deserailization for preventing SQL Injection.
         2024-08-18: Overhaul of addHome_v1, addVehicle_v1, and addVehicleClaim_v1.
+        2024-08-19: Added addPolicy_v1, and addVehicleCoverage_v1.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
 	
-	TO DO (SELF):
-		Policies Enumerations. - DONE
-		Bundle Enumeration for Car and Home. For non-goal. - DONE
-    Plan for additional tables; such as CLAIMS
-    Need to add Stored Procedure for Homes Inserts.
+	  TO DO (SELF):
+		  Policies Enumerations. - DONE
+		  Bundle Enumeration for Car and Home. For non-goal. - DONE
+      Plan for additional tables; such as CLAIMS
+      Stored Procedure Overhaul to JSON Serialization and Deserialization.
 		
     DISCLAIMER:
         After receipt, this Script is "as-is". Additional modifications past the base are at 100.00 per hour.
@@ -34,12 +35,13 @@
         Notes.
         
     Accessing the below variables is @nameOfVariable. The variable will ONLY be accessible within the bounds of the GO
-		Paramater. This is because each batch is committed before the next can complete.
+		  Paramater. This is because each batch is committed before the next can complete.
 
     WARNING: DO NOT MODIFY SCRIPT WITHOUT CONSULTING THE CREATOR FIRST. AS SOME CHANGES MAY PREVENT THE SCRIPT FROM
 		EXECUTING PROPERLY.
 
     Scalar Variables:
+        @json: Python's input from the User. This will be delivered in JSON for serialization and deserialization.
         @acctHonorifics: Account Holder's Honorofics. Null by default.
         @acctFirstName: Account Holder's First Name.
         @acctLastName: Account Holder's Last Name.
@@ -86,6 +88,16 @@
         @homeSec2PL: Home, Section 2, Personal Liability (Each Occurrence).
         @homeSec2DPO: Home, Section 2, Damage to Property of Others. 
         @homeSec2MPO: Home, Section 2, Medical Payments to Others (Each Person).
+        @vehicleCoverageAccountNum: Vehicle Coverage Associated Account Number. Supplied by the Python Application.
+        @vehicleCoverageVehicle: Counter for vehicles. This may be removed or altered in future builds.
+        @vehicleCoverageLiability: Vehicle Coverage Liability.
+        @vehicleCoverageCollision: Vehicle Coverage Collision.
+        @vehicleCoverageComprehensive: Vehicle Coverage Comprehensive.
+        @vehicleCoveragePIP: Vehicle Coverage Personal Injury Protection.
+        @vehicleCoverageMedPay: Vehicle Coverage Medical Pay.
+        @vehicleCoverageUnMoto: Vehicle Coverage Uninsured Motorist.
+        @vehicleCoverageRentalReimb: Vehicle Coverage Rental Reimbursement.
+        @vehicleCoverageRoadsideTow: Vehicle Coverage Roadside Tow.
 		
 	Citations:
 		1. CREATE PROCEDURE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver16
@@ -470,6 +482,147 @@ INSERT INTO HOMES VALUES (
 @homeSec2DPO,
 @homeSec2MPO
 )
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+  SELECT 
+    ERROR_NUMBER() AS ErrorNumber
+   ,ERROR_SEVERITY() AS ErrorSeverity
+   ,ERROR_STATE() AS ErrorState
+   ,ERROR_PROCEDURE() AS ErrorProcedure
+   ,ERROR_LINE() AS ErrorLine
+   ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE paca.addPolicy_v1
+@json NVARCHAR(MAX)
+AS
+SET NOCOUNT ON
+
+DECLARE @tempTable TABLE (
+	POLICIES_NAME NVARCHAR(128) NOT NULL,
+	POLICIES_TYPE INT NOT NULL,
+	POLICIES_DESC NVARCHAR(MAX) NULL)
+
+INSERT INTO @tempTable
+SELECT
+	POLICIES_NAME,
+	POLICIES_TYPE,
+	POLICIES_DESC
+FROM OPENJSON(@json) WITH (
+    POLICIES_NAME   NVARCHAR(128) 'strict $.POLICIES_NAME',
+    POLICIES_TYPE 	INT 'strict $.POLICIES_TYPE',
+	  POLICIES_DESC 	NVARCHAR(MAX) '$.POLICIES_DESC'
+);
+
+
+DECLARE
+@policyName NVARCHAR(128) = (SELECT TOP 1 POLICIES_NAME FROM @tempTable),
+@policyType INT = (SELECT TOP 1 POLICIES_TYPE FROM @tempTable),
+@policyDesc NVARCHAR(MAX) = (SELECT TOP 1 POLICIES_DESC FROM @tempTable)
+
+BEGIN TRY
+BEGIN TRANSACTION
+INSERT INTO HOMES VALUES (
+@policyName,
+@policyType,
+@policyDesc
+);
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+  SELECT 
+    ERROR_NUMBER() AS ErrorNumber
+   ,ERROR_SEVERITY() AS ErrorSeverity
+   ,ERROR_STATE() AS ErrorState
+   ,ERROR_PROCEDURE() AS ErrorProcedure
+   ,ERROR_LINE() AS ErrorLine
+   ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+RETURN;
+
+GO
+
+CREATE PROCEDURE paca.addVehicleCoverage_v1
+@json NVARCHAR(MAX)
+AS
+SET NOCOUNT ON
+
+DECLARE @vehicleRowCount INT = (SELECT COUNT(VEHICLES_COVERAGE_VEHICLE) FROM paca.VEHICLE_COVERAGES);
+
+DECLARE @tempTable TABLE (
+	VEHICLES_COVERAGE_ACCOUNT_NUM NVARCHAR(11) NOT NULL,
+	VEHICLES_COVERAGE_VEHICLE INT NOT NULL,
+	VEHICLES_COVERAGE_LIABILITY DECIMAL(10,2) NULL,
+	VEHICLES_COVERAGE_COLLISION DECIMAL(10,2) NULL,
+	VEHICLES_COVERAGE_COMPREHENSIVE DECIMAL(10,2) NULL,
+	VEHICLES_COVERAGE_PIP DECIMAL(10,2) NULL,
+	VEHICLES_COVERAGE_MEDPAY DECIMAL(10,2) NULL,
+	VEHICLES_COVERAGE_UNMOTO DECIMAL(10,2) NULL,
+	VEHICLES_COVERAGE_RENTAL_REIMB DECIMAL(10,2) NULL,
+	VEHICLES_COVERAGE_ROADSIDE_TOW DECIMAL(10,2) NULL)
+
+INSERT INTO @tempTable
+SELECT
+	VEHICLES_COVERAGE_ACCOUNT_NUM,
+	VEHICLES_COVERAGE_VEHICLE,
+	VEHICLES_COVERAGE_LIABILITY,
+  VEHICLES_COVERAGE_COLLISION,
+  VEHICLES_COVERAGE_COMPREHENSIVE,
+  VEHICLES_COVERAGE_PIP,
+  VEHICLES_COVERAGE_MEDPAY,
+  VEHICLES_COVERAGE_UNMOTO,
+  VEHICLES_COVERAGE_RENTAL_REIMB,
+  VEHICLES_COVERAGE_ROADSIDE_TOW
+FROM OPENJSON(@json) WITH (
+    VEHICLES_COVERAGE_ACCOUNT_NUM   NVARCHAR(11) 'strict $.VEHICLES_COVERAGE_ACCOUNT_NUM',
+    VEHICLES_COVERAGE_VEHICLE 	INT 'strict $.VEHICLES_COVERAGE_VEHICLE',
+	  VEHICLES_COVERAGE_LIABILITY DECIMAL(10,2) '$.VEHICLES_COVERAGE_LIABILITY',
+    VEHICLES_COVERAGE_COLLISION DECIMAL(10,2) '$.VEHICLES_COVERAGE_COLLISION',
+    VEHICLES_COVERAGE_COMPREHENSIVE DECIMAL(10,2) '$.VEHICLES_COVERAGE_COMPREHENSIVE',
+    VEHICLES_COVERAGE_PIP DECIMAL(10,2)'$.VEHICLES_COVERAGE_PIP',
+    VEHICLES_COVERAGE_MEDPAY DECIMAL(10,2) '$.VEHICLES_COVERAGE_MEDPAY',
+    VEHICLES_COVERAGE_UNMOTO DECIMAL(10,2) '$.VEHICLES_COVERAGE_UNMOTO',
+    VEHICLES_COVERAGE_RENTAL_REIMB DECIMAL(10,2) '$.VEHICLES_COVERAGE_RENTAL_REIMB',
+    VEHICLES_COVERAGE_ROADSIDE_TOW DECIMAL(10,2) '$.VEHICLES_COVERAGE_ROADSIDE_TOW'
+);
+
+
+DECLARE
+@vehicleCoverageAccountNum NVARCHAR(11) = (SELECT TOP 1 VEHICLES_COVERAGE_ACCOUNT_NUM FROM @tempTable)
+
+DECLARE
+@vehicleCoverageVehicle INT = (SELECT TOP 1 VEHICLES_COVERAGE_VEHICLE FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoverageLiability DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_LIABILITY FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoverageCollision DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_COLLISION FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoverageComprehensive DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_COMPREHENSIVE FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoveragePIP DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_PIP FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoverageMedPay DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_MEDPAY FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoverageUnMoto DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_UNMOTO FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoverageRentalReimb DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_RENTAL_REIMB FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum),
+@vehicleCoverageRoadsideTow DECIMAL(10,2) = (SELECT TOP 1 VEHICLES_COVERAGE_ROADSIDE_TOW FROM @tempTable WHERE VEHICLES_COVERAGE_ACCOUNT_NUM = @vehicleCoverageAccountNum)
+
+BEGIN TRY
+BEGIN TRANSACTION
+INSERT INTO HOMES VALUES (
+@vehicleCoverageAccountNum,
+@vehicleCoverageVehicle,
+@vehicleCoverageLiability,
+@vehicleCoverageCollision,
+@vehicleCoverageComprehensive,
+@vehicleCoveragePIP,
+@vehicleCoverageMedPay,
+@vehicleCoverageUnMoto,
+@vehicleCoverageRentalReimb,
+@vehicleCoverageRoadsideTow
+);
 COMMIT TRANSACTION
 END TRY
 BEGIN CATCH
