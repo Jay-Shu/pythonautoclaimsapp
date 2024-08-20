@@ -26,3 +26,7 @@ def connect():
     cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=PACA;UID=pacauser;PWD=pacauser;Encrypt=True;TrustServerCertificate=True')
     cnxn.setencoding('utf-8')
     return cnxn
+
+
+def getAccounts(accountNum):
+    
