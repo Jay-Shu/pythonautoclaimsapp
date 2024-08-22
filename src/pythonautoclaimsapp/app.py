@@ -17,15 +17,24 @@ Changelog:
 
 Functions
 
+https://stackoverflow.com/questions/66084762/call-function-from-another-file-without-import-clause
 
 Author Notes:
     Our connection to MS SQL Server.
 """
+#import sys
+#sys.path.append("lib")
+
+import importlib
+module = importlib.import_module("lib.connect.to.mssql.server")
+
+import connect_to_mssql_server
+
 import toga
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 
-import connect_to_mssql_server
+
 
 class pythonautoclaimsapp(toga.App):
     def startup(self):
@@ -42,9 +51,9 @@ class pythonautoclaimsapp(toga.App):
         name_box.add(self.name_input)
 
         button = toga.Button(
-            "Say Hello!",
+            "Connect",
             on_press=self.connect,
-            style=Pack(padding=5),
+            #style=Pack(padding=5),
         )
 
         main_box.add(name_box)
@@ -54,12 +63,12 @@ class pythonautoclaimsapp(toga.App):
         self.main_window.content = main_box
         self.main_window.show()
 
-    def say_hello(self, widget):
-        print(f"Hello, {self.name_input.value}")
+#    def say_hello(self, widget):
+#       print(f"Hello, {self.name_input.value}")
      
     def connect():
-        initilizeConnection = connect_to_mssql_server.connect()
-        print(f"Initializing Connection... %s",initilizeConnection)
+        connect_to_mssql_server.connect()
+        print("Initializing Connection...")
 
 def main():
     return pythonautoclaimsapp()

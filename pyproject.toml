@@ -179,6 +179,7 @@ build_gradle_dependencies = [
 [tool.briefcase.app.pythonautoclaimsapp.web]
 requires = [
     "toga-web~=0.4.5",
+	"E:/scripts/python/pythonautoclaimsapp/src/pythonautoclaimsapp"
 ]
 style_framework = "Shoelace v2.3"
 
