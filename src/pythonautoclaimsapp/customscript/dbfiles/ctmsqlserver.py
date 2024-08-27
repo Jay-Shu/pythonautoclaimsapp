@@ -11,8 +11,9 @@ Changelog:
             template of Accounts.
         2024-08-25: Moved all functions underneath class getAccts.
         2024-08-25: Removed SaveFile attribute from ODBC Connection String.
-
-
+        2024-08-26: Updated __init__ to startup. This change allowed for the
+            application to load.
+        2024-08-26: 
 
 
 Citations:
@@ -32,64 +33,40 @@ Author Notes:
         reduce the likelyhood of SQL Injection.
 """
 
-class getAccts(toga.App):
-    def __init__(self):
+
+class get_accts(toga.App):
+    def startup(self,widget):
         # Create the main window
-        self.main_window = toga.MainWindow(title=self.name)
-
+        self.second_window = toga.Window(title=self.formal_name)
         # Define columns for the table
-        columns = ['ACCOUNT_NUM', 'ACCOUNT_HONORIFICS', 'ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE']  # Modify based on your stored procedure output
+        columns = ['ACCOUNT_NUM', 'ACCOUNT_HONORIFICS', 'ACCOUNT_FIRST_NAME', 'ACCOUNT_LAST_NAME', 'ACCOUNT_SUFFIX', 'ACCOUNT_STREET_ADD_1', 'ACCOUNT_STREET_ADD_2', 'ACCOUNT_CITY','ACCOUNT_STATE', 'ACCOUNT_ZIP', 'ACCOUNT_PO_BOX', 'ACCOUNT_DATE_START', 'ACCOUNT_DATE_RENEWAL', 'ACCOUNT_TYPE']
         self.table = toga.Table(headings=columns, style=Pack(flex=1))
-
         # Call the method to fetch data from the stored procedure
         data = self.fetch_data()
-
         # Populate the table with data
         self.table.data.extend(data)
-
         # Add the table to the main window
-        self.main_window.content = self.table
-
+        self.second_window.content = self.table
         # Show the main window
-        self.main_window.show()
+        self.second_window.show()
 
-    def retrieveAccounts(self):
-        cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES')
-        cnxn.setencoding('utf-8')
+    def retrieve_accounts(self):
+        try:
+            cnxn = pyodbc.connect(
+            'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES',autocommit=False)
+            cnxn.setencoding('utf-8')
 
-        params = None
-    
-        cnxn.execute("{CALL paca.getAccounts_v1}",params)
-    
-        rows = cnxn.fetchall()
-    
-        cnxn.close()
-    
-        data = [tuple(row) for row in rows]
-    
-        return data
+            params = None
 
-    
+            cnxn.execute("{CALL paca.getAccounts_v1}",params)
 
-"""def getAccounts(accountNum): """
+            rows = cnxn.fetchall()
 
-"""
-    Name of Script: connect_to_mssql_server.py
-    Author: Jacob Shuster
-    Role: Consultant - 1099
-    Umbrella Company: N/A
-    Creation Date: 2024-08-11
-    Script Cost: N/A
-    Rate: 100.00 (Based on 2019*)
+            cnxn.close()
 
-    Changelog:
-        2024-08-11: Updated naming convention of script. Hyphens cannot be used.
-            It must be underscores.
-    
-    Functions
+            data = [tuple(row) for row in rows]
 
-    
-    Author Notes:
-        Our connection to MS SQL Server.
-"""
-    
+            return data
+        
+        except Exception as ERROR:
+            print(ERROR)
