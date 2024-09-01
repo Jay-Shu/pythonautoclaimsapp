@@ -50,6 +50,7 @@
 	TO DO (SELF):
 		Policies Enumerations. - DONE
 		Bundle Enumeration for Car and Home. For non-goal. - DONE
+		Research GPG Keys, and possible inclusion with application.
 		
     DISCLAIMER:
         After receipt, this Script is "as-is". Additional modifications past the base are at 100.00 per hour.
@@ -99,12 +100,16 @@
 		29. Set the page_verify database option to checksum, https://learn.microsoft.com/en-us/sql/relational-databases/policy-based-management/set-the-page-verify-database-option-to-checksum?view=sql-server-ver16
 		30. Best practices for persistent database connections in Python when using Flask, https://stackoverflow.com/questions/55523299/best-practices-for-persistent-database-connections-in-python-when-using-flask
 		31. Indexes on computed columns, https://learn.microsoft.com/en-us/sql/relational-databases/indexes/indexes-on-computed-columns?view=sql-server-ver16
+		32. NTFS allocation unit size, https://learn.microsoft.com/en-us/system-center/scom/plan-sqlserver-design?view=sc-om-2022#ntfs-allocation-unit-size
+		33. DBCC CHECKIDENT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checkident-transact-sql?view=sql-server-ver16
 
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
 		GO Keyword does not require a semi-colon. As it would be redundant.
 		BEGIN...END Blocks have been phased out completely for TRY...CATCH and GO.
+		DBCC CHECKIDENT(N'schema.table_name') and use DBCC CHECKIDENT(N'schema.table_name',RESEED,value)
+
 		Calculation for DECIMAL(X,Y): (10 ^ (x-y)) - (10 ^ -y) . Absolute and Negative Values.
 		Logical Processing Order:	
     		FROM
@@ -118,6 +123,34 @@
     		DISTINCT
     		ORDER BY
     		TOP
+
+		NTFS allocation unit size
+			Volume alignment, commonly referred to as sector alignment, should be performed
+			on the file system (NTFS) whenever a volume is created on a RAID device. Failure
+			to do so can lead to significant performance degradation and is most commonly the
+			result of partition misalignment with stripe unit boundaries. It can also lead
+			to hardware cache misalignment, resulting in inefficient utilization of the array
+			cache. When formatting the partition that will be used for SQL Server data files,
+			it's recommended that you use a 64-KB allocation unit size (that is, 65,536 bytes)
+			for data, logs, and tempdb. Be aware, however, that using allocation unit sizes
+			greater than 4 KB results in the inability to use NTFS compression on the volume.
+			While SQL Server does support read-only data on compressed volumes, it isn't recommended.
+
+		Max Server Memeory Recommendation (initial reservation):
+			1 GB of RAM for the OS.
+			1 GB of RAM per every 4 GB of RAM installed (up to 16-GB RAM).
+			1 GB of RAM per every 8 GB RAM installed (above 16-GB RAM).
+		
+		Reserved Memory Calculation:
+			((total system memory) – (memory for thread stack) – (OS memory requirements) – (memory for other applications) – (memory for multipage allocators))
+
+		total system memory: Total RAM on the System
+		memory for thread stack:
+			SQL Server Architecture		OS Architecture			Stack Size
+			x86 (32-bit)				x86 (32-bit)			512 kb
+			x86 (32-bit)				x64 (64-bit)			768 kb
+			x64 (64-bit)				x64 (64-bit)			2048 kb
+			IA64 (Itanium)				IA64 (Itanium)			4096 kb
 **/
 
 

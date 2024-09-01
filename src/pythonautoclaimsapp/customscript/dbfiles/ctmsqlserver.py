@@ -1,9 +1,11 @@
 import pyodbc
 import toga
+import tracemalloc
 from toga.style import Pack
 from toga.constants import COLUMN
 
-# Specifying the ODBC driver, server name, database, etc. directly
+tracemalloc.start()
+
 """
 Changelog:
         2024-08-25: Moving to OOP (Object Oriented Programming) model.
@@ -34,12 +36,13 @@ Author Notes:
 """
 
 
-class get_accts(toga.App):
-    def startup(self,widget):
+class GetAccts(toga.App):
+    def startup(self):
         # Create the main window
         self.second_window = toga.Window(title=self.formal_name)
         # Define columns for the table
-        columns = ['ACCOUNT_NUM', 'ACCOUNT_HONORIFICS', 'ACCOUNT_FIRST_NAME', 'ACCOUNT_LAST_NAME', 'ACCOUNT_SUFFIX', 'ACCOUNT_STREET_ADD_1', 'ACCOUNT_STREET_ADD_2', 'ACCOUNT_CITY','ACCOUNT_STATE', 'ACCOUNT_ZIP', 'ACCOUNT_PO_BOX', 'ACCOUNT_DATE_START', 'ACCOUNT_DATE_RENEWAL', 'ACCOUNT_TYPE']
+        columns = ['ACCOUNT_NUM', 'ACCOUNT_HONORIFICS', 'ACCOUNT_FIRST_NAME', 'ACCOUNT_LAST_NAME', 'ACCOUNT_SUFFIX', 'ACCOUNT_STREET_ADD_1',
+                   'ACCOUNT_STREET_ADD_2', 'ACCOUNT_CITY', 'ACCOUNT_STATE', 'ACCOUNT_ZIP', 'ACCOUNT_PO_BOX', 'ACCOUNT_DATE_START', 'ACCOUNT_DATE_RENEWAL', 'ACCOUNT_TYPE']
         self.table = toga.Table(headings=columns, style=Pack(flex=1))
         # Call the method to fetch data from the stored procedure
         data = self.fetch_data()
@@ -50,23 +53,28 @@ class get_accts(toga.App):
         # Show the main window
         self.second_window.show()
 
-    def retrieve_accounts(self):
+    def retrieve_accounts():
         try:
             cnxn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES',autocommit=False)
+                'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=False)
             cnxn.setencoding('utf-8')
-
             params = None
-
-            cnxn.execute("{CALL paca.getAccounts_v1}",params)
-
-            rows = cnxn.fetchall()
-
-            cnxn.close()
-
+            cursor = cnxn.cursor()
+            cursor.execute("{CALL paca.getAccounts_v1}", params)
+            rows = cursor.fetchall()
             data = [tuple(row) for row in rows]
-
             return data
-        
+
         except Exception as ERROR:
             print(ERROR)
+        finally:
+            cursor.close()
+            cnxn.close()
+
+
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics('lineno')
+
+print("[ Top 10 ]")
+for stat in top_stats[:10]:
+    print(stat)

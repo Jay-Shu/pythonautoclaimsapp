@@ -16,6 +16,7 @@ Changelog:
         It must be underscores.
     2024-08-21: Updated references for the connecttomssqlserver. Still pending resolution of
         resolving.
+    2024-08-27: Troubleshooting with tracemalloc.
 
 Functions
 
@@ -26,29 +27,49 @@ Author Notes:
 """
 
 import toga
+import tracemalloc
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
-from pythonautoclaimsapp.customscript.dbfiles.ctmsqlserver import get_accts
+from pythonautoclaimsapp.customscript.dbfiles.ctmsqlserver import GetAccts
+
+tracemalloc.start()
 
 
-class pythonautoclaimsapp(toga.App):
-    def open_secondary(self,widget):
-        get_accts(self.main_window)
-        
+class PythonAutoClaimsApp(toga.App):
     def startup(self):
         main_box = toga.Box(style=Pack(direction=COLUMN))
-        
-        button = toga.Button(
+
+        account_button = toga.Button(
             "Accounts",
             on_press=self.open_secondary,
             style=Pack(padding=5),
         )
-        
-        main_box.add(button)
-        
+
+        main_box.add(account_button)
+
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = main_box
         self.main_window.show()
 
+    def open_secondary(self, widget):
+        try:
+            t = GetAccts(widget)
+            t.__match_args__(self)
+            print(repr(t))
+            GetAccts(widget)
+            print("Getting Accounts")
+        
+        except Exception as ERROR:
+            print(ERROR)
+
+
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics('lineno')
+
+print("[ Top 10 ]")
+for stat in top_stats[:10]:
+    print(stat)
+
+
 def main():
-    return pythonautoclaimsapp()
+    return PythonAutoClaimsApp()

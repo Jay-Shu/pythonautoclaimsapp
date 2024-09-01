@@ -11,12 +11,15 @@
         2024-08-02: Staging for Certificates to be added to Stored Procedures
           per best practices. (Researching further).
         2024-08-05: Reseolved Syntax issues with Stored Procedures.
-        2024-08-05: Remove USE clause, because CREATE PROCEDURE (T-SQL)
+        2024-08-05: Remove USE clause, because CREATE PROCEDURE (T-SQL).
           does not allow for statements above it.
         2024-08-17: Updated a mispelled column name and updated accordingly within PythonAutoClaimsApp.sql
         2024-08-18: Fixed spelling errors and updated SELECT STATEMENTS of Homes Stored Procedcure v3 to use
           HOMES_INTERNAL_ID. This was necessary to prevent updates/deletes for hitting beyond their intended
           target.
+        2024-08-26: Updated Incorrect column names to their correct names. HOMES_INTENRAL_ID to HOMES_INTERNAL_ID.
+          Also, HOMES_SEC1_SI to HOMES_SEC1_SL.
+        2024-08-27: getAccounts_v1 updated to correct column ordering.
 
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -24,6 +27,8 @@
 	TO DO (SELF):
 		Policies Enumerations. - DONE
 		Bundle Enumeration for Car and Home. For non-goal. - DONE
+    Serialize and Deserialize Stored Procedures overhaul, this is for reducing the likelihood of SQL Injection.
+    Scalar Variables overhaul.
 		
     DISCLAIMER:
         After receipt, this Script is "as-is". Additional modifications past the base are at 100.00 per hour.
@@ -44,7 +49,7 @@
         @intent: Our mode of searching; 1 = Equal to for First Name and Last Name,
           2 = First Name Ends With and Last Name Equal To.
           3 = First Name Starts With and Last Name Equal To.
-          4 = Last Name Ends  With and First Name Equal To.
+          4 = Last Name Ends With and First Name Equal To.
           5 = Last Name Starts With and First Name Equal To.
           Contains is not being considered at this time. The table will be full scans due to their small size regardless of the Index.
         @accountNum: Account Number of the Client Account.
@@ -102,21 +107,21 @@ CREATE PROCEDURE paca.getAccounts_v1
 as
 SET NOCOUNT ON
 BEGIN TRY
-SELECT ACCOUNT_CITY,
-ACCOUNT_DATE_RENEWAL,
-ACCOUNT_DATE_START,
-ACCOUNT_FIRST_NAME,
-ACCOUNT_HONORIFICS,
-ACCOUNT_ID,
-ACCOUNT_LAST_NAME,
-ACCOUNT_NUM,
-ACCOUNT_PO_BOX,
-ACCOUNT_STATE,
-ACCOUNT_STREET_ADD_1,
-ACCOUNT_STREET_ADD_2,
-ACCOUNT_SUFFIX,
-ACCOUNT_TYPE,
-ACCOUNT_ZIP
+SELECT
+  ACCOUNT_NUM,
+	ACCOUNT_HONORIFICS,
+	ACCOUNT_FIRST_NAME,
+	ACCOUNT_LAST_NAME,
+	ACCOUNT_SUFFIX,
+	ACCOUNT_STREET_ADD_1,
+	ACCOUNT_STREET_ADD_2,
+	ACCOUNT_CITY,
+	ACCOUNT_STATE,
+	ACCOUNT_ZIP,
+	ACCOUNT_PO_BOX,
+	ACCOUNT_DATE_START,
+	ACCOUNT_DATE_RENEWAL,
+	ACCOUNT_TYPE
 FROM paca.ACCOUNTS
 END TRY
 BEGIN CATCH
@@ -383,7 +388,7 @@ h.HOMES_SEC1_DWEX,
 h.HOMES_SEC1_PER_PROP,
 h.HOMES_SEC1_LOU,
 h.HOMES_SEC1_FD_SC,
-h.HOMES_SEC1_SI,
+h.HOMES_SEC1_SL,
 h.HOMES_SEC1_BU_SD,
 h.HOMES_SEC2_PL,
 h.HOMES_SEC2_DPO,
@@ -419,7 +424,7 @@ HOMES_SEC1_DWEX,
 HOMES_SEC1_PER_PROP,
 HOMES_SEC1_LOU,
 HOMES_SEC1_FD_SC,
-HOMES_SEC1_SI,
+HOMES_SEC1_SL,
 HOMES_SEC1_BU_SD,
 HOMES_SEC2_PL,
 HOMES_SEC2_DPO,
@@ -454,7 +459,7 @@ HOMES_SEC1_DWEX,
 HOMES_SEC1_PER_PROP,
 HOMES_SEC1_LOU,
 HOMES_SEC1_FD_SC,
-HOMES_SEC1_SI,
+HOMES_SEC1_SL,
 HOMES_SEC1_BU_SD,
 HOMES_SEC2_PL,
 HOMES_SEC2_DPO,
@@ -490,7 +495,7 @@ HOMES_SEC1_DWEX,
 HOMES_SEC1_PER_PROP,
 HOMES_SEC1_LOU,
 HOMES_SEC1_FD_SC,
-HOMES_SEC1_SI,
+HOMES_SEC1_SL,
 HOMES_SEC1_BU_SD,
 HOMES_SEC2_PL,
 HOMES_SEC2_DPO,
