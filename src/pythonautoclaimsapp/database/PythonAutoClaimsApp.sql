@@ -41,7 +41,17 @@
 		2024-08-16: Fixed note regarding ALTER ROLE from it's previous ALTER SERVER ROLE. SERVER is not a keyword used here.
 		2024-08-17: Commented out problematic SET Clauses. These will need more research.
 		2024-08-17: Removed old SET Clauses.
-		2024-08-17: Updated BEGIN CATCH...END CATCH Blocks with SELECT Statement instead of original RAISEERROR()
+		2024-08-17: Updated BEGIN CATCH...END CATCH Blocks with SELECT Statement instead of original RAISEERROR().
+		2024-09-03: Researching into DBCC CHECKIDENT() as this looks to be a necessary component for maintaining
+			consistency with Computed columns. More specifically, these will need to target the following:
+				ACCOUNTS
+				HOMES
+				POLICIES
+				VEHICLE_CLAIMS
+			The remainder columns using IDENTITY(x,y) and no other Computed value will not require this to fit Best Practices.
+		2024-09-03: Added Reserved Memory Calculator, using my local machine as the Test Case. Initial Calculation does not
+			account for other applications running on this machine similar to that of a Production Server.
+		2024-09-03: Updated the Column Names of the Current Memory Allocations Query. Cosmetic Change.
 		
 
     TO DO (Requested):
@@ -66,7 +76,18 @@
 		EXECUTING PROPERLY.
 
     Scalar Variables:
-        variableName; description
+        @totalSysMem: Total System Memory of the Database Server where PACA will reside.
+		@memoryForThreadStack: Memory required for your Database Server's Thread Stack. Refer to the table therein
+			"Reserved Memory Calculator (Local Machine)" for determining what value that needs to be. This value is
+			in KB therefore, must be converted to GB.
+		@osMemoryRequirements: OS Memory Requirements, Refer to your OS Manufacturer's Technical Specifications to
+			find this number.
+		@memoryForOtherApplications: Find, record, and calculate the Memory required for any other applications
+			running on the MS SQL Server.
+		@memoryForMultipageAllocators: Refer to Changes to memory management starting with SQL Server 2012 (11.x).
+			Specifically MPA, for memory allocations that request more than 8 KB. This is included within the
+			Max Server Memory (MB) and Min Server Memory (MB) Configuration options and no longer independent.
+
 		
 	Citations:
 		1. Database Files and Filegroups, https://learn.microsoft.com/en-us/sql/relational-databases/databases/database-files-and-filegroups?view=sql-server-ver16
@@ -102,6 +123,12 @@
 		31. Indexes on computed columns, https://learn.microsoft.com/en-us/sql/relational-databases/indexes/indexes-on-computed-columns?view=sql-server-ver16
 		32. NTFS allocation unit size, https://learn.microsoft.com/en-us/system-center/scom/plan-sqlserver-design?view=sc-om-2022#ntfs-allocation-unit-size
 		33. DBCC CHECKIDENT (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checkident-transact-sql?view=sql-server-ver16
+		34. Memory management architecture guide, https://learn.microsoft.com/en-us/sql/relational-databases/memory-management-architecture-guide?view=sql-server-ver16
+		35. Configure the network packet size (serger configuration option), https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/configure-the-network-packet-size-server-configuration-option?view=sql-server-ver16.
+		36. DBCC TRACEON - Trace Flags (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-traceon-trace-flags-transact-sql?view=sql-server-ver16
+		37. Query hints (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-query?view=sql-server-ver16
+		38. sys.types (Transact-SQL), https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-types-transact-sql?view=sql-server-ver16
+		39. SQL Injection, https://learn.microsoft.com/en-us/sql/relational-databases/security/sql-injection?view=sql-server-ver16
 
 
 	Author Notes:
@@ -151,11 +178,66 @@
 			x86 (32-bit)				x64 (64-bit)			768 kb
 			x64 (64-bit)				x64 (64-bit)			2048 kb
 			IA64 (Itanium)				IA64 (Itanium)			4096 kb
-**/
+		
+		Reserved Memory Calculator (Local Machine):
+			DECLARE	 @totalSysMem INT = 128,
+			@memoryForThreadStack INT = 2048,
+			@osMemoryRequirements INT = 4,
+			@memoryForOtherApplications INT = 0,
+			@memoryForMultipageAllocators INT = 0
 
+		SELECT ((@totalSysMem) - ((@memoryForThreadStack/1000)/1000) - (@osMemoryRequirements) - (@memoryForOtherApplications) - (@memoryForMultipageAllocators))
+
+		Finding your currently allocated memory:
+			SELECT
+  				physical_memory_in_use_kb/1024 AS sql_physical_memory_in_use_MB,
+    			large_page_allocations_kb/1024 AS sql_large_page_allocations_MB,
+    			locked_page_allocations_kb/1024 AS sql_locked_page_allocations_MB,
+    			virtual_address_space_reserved_kb/1024 AS sql_VAS_reserved_MB,
+    			virtual_address_space_committed_kb/1024 AS sql_VAS_committed_MB,
+    			virtual_address_space_available_kb/1024 AS sql_VAS_available_MB,
+    			page_fault_count AS sql_page_fault_count,
+    			memory_utilization_percentage AS sql_memory_utilization_percentage,
+    			process_physical_memory_low AS sql_process_physical_memory_low,
+    			process_virtual_memory_low AS sql_process_virtual_memory_low
+			FROM sys.dm_os_process_memory;
+		Query hints are recommended as a last resort and only for experienced developers and database administrators.
+**/
 
 -- We need to create the Database First while in the Master Database
 USE MASTER
+
+-- Update the values below to their proper corresponding values.
+-- If you do not have these values run the query below independently.
+
+DECLARE	 @totalSysMem INT = 128,
+			@memoryForThreadStack INT = 2048,
+			@osMemoryRequirements INT = 4,
+			@memoryForOtherApplications INT = 0,
+			@memoryForMultipageAllocators INT = 0
+
+		SELECT ((@totalSysMem) - ((@memoryForThreadStack/1000)/1000) - (@osMemoryRequirements) - (@memoryForOtherApplications) - (@memoryForMultipageAllocators))
+
+
+GO
+
+-- Lets display our currently allocated memory for any future calculations.
+-- Updated Column Names for Easier Readability.
+
+SELECT
+  				physical_memory_in_use_kb/1024 AS N'SQL Physical Memory in use MB',
+    			large_page_allocations_kb/1024 AS N'SQL Large Page Allocations MB',
+    			locked_page_allocations_kb/1024 AS N'SQL Locked Page Allocations MB',
+    			virtual_address_space_reserved_kb/1024 AS N'SQL VAS Reserved MB - For Multi-page Allocator',
+    			virtual_address_space_committed_kb/1024 AS N'SQL VAS Committed MB - For Multi-page Allocator',
+    			virtual_address_space_available_kb/1024 AS N'SQL VAS Available MB - For Multi-page Allocator',
+    			page_fault_count AS N'SQL Page Fault Count',
+    			memory_utilization_percentage AS N'SQL Memory Utilization Percentage',
+    			process_physical_memory_low AS N'SQL Process Physical Memory Low',
+    			process_virtual_memory_low AS N'SQL Process Virtual Memory Low'
+			FROM sys.dm_os_process_memory;
+
+GO
 
 --Create our database. Aptly named PACA.
 CREATE DATABASE PACA
@@ -209,6 +291,16 @@ SET QUOTED_IDENTIFIER ON;
 -- SET NUMERIC_ROUNDABORT OFF; This must be set to off for Computed Columns.
 
 GO
+
+/**
+Default is already 4096, not needed again.
+
+-- Per Microsoft Documentation 4096 is the recommended value.
+EXEC sp_configure 'network packet size', 4096;
+GO
+RECONFIGURE; --This means you don't have to restart the SQL Server after making this change.
+GO
+**/
 
 ALTER DATABASE [PACA]
 SET RECOVERY FULL; --FULL is necessary, as this will ensure that the transaction log is in lock-step.

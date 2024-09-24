@@ -3,7 +3,7 @@ Python Auto Claims app - Simple. Intended for interactions with an MS SQL DB.
 
 In it's current state the Python side has not yet been started. Therefaore, in it's base form.
 
-Name of Script: connect_to_mssql_server.py
+Name of Script: app.py
 Author: Jacob Shuster
 Role: Consultant - 1099
 Umbrella Company: N/A
@@ -21,6 +21,7 @@ Changelog:
 Functions
 
 https://stackoverflow.com/questions/66084762/call-function-from-another-file-without-import-clause
+https://toga.readthedocs.io/en/stable/reference/api/window.html
 
 Author Notes:
     Our connection to MS SQL Server.
@@ -31,6 +32,7 @@ import tracemalloc
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 from pythonautoclaimsapp.customscript.dbfiles.ctmsqlserver import GetAccts
+
 
 tracemalloc.start()
 
@@ -53,11 +55,13 @@ class PythonAutoClaimsApp(toga.App):
 
     def open_secondary(self, widget):
         try:
-            t = GetAccts(widget)
-            t.__match_args__(self)
-            print(repr(t))
-            GetAccts(widget)
-            print("Getting Accounts")
+            secondary_box = toga.Window(title=self.formal_name)
+            t = GetAccts()
+            #type(t)
+            secondary_box.content = t
+            #t.index()
+            #secondary_box.content = GetAccts(widget)
+            secondary_box.show()
         
         except Exception as ERROR:
             print(ERROR)

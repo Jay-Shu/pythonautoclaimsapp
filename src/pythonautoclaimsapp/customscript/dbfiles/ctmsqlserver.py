@@ -2,7 +2,8 @@ import pyodbc
 import toga
 import tracemalloc
 from toga.style import Pack
-from toga.constants import COLUMN
+#from toga.constants import COLUMN
+from toga.style.pack import COLUMN, CENTER
 
 tracemalloc.start()
 
@@ -37,23 +38,37 @@ Author Notes:
 
 
 class GetAccts(toga.App):
-    def startup(self):
+    def __init__(self, app, widget):
         # Create the main window
-        self.second_window = toga.Window(title=self.formal_name)
+        super().__init__(title=self.formal_name)
+        self.app = app
+        self.update()
+        
+    def update(self):
+        box = toga.Box(style=Pack(direction=COLUMN, alignment=CENTER,font_size=14))
         # Define columns for the table
         columns = ['ACCOUNT_NUM', 'ACCOUNT_HONORIFICS', 'ACCOUNT_FIRST_NAME', 'ACCOUNT_LAST_NAME', 'ACCOUNT_SUFFIX', 'ACCOUNT_STREET_ADD_1',
                    'ACCOUNT_STREET_ADD_2', 'ACCOUNT_CITY', 'ACCOUNT_STATE', 'ACCOUNT_ZIP', 'ACCOUNT_PO_BOX', 'ACCOUNT_DATE_START', 'ACCOUNT_DATE_RENEWAL', 'ACCOUNT_TYPE']
-        self.table = toga.Table(headings=columns, style=Pack(flex=1))
+        
         # Call the method to fetch data from the stored procedure
-        data = self.fetch_data()
+        data = self.retrieve_accounts()
+        label = toga.Label('Accounts Results',style=Pack(padding=10,font_size=14))
+        box.add(label)
+        
+        if data:
         # Populate the table with data
-        self.table.data.extend(data)
-        # Add the table to the main window
-        self.second_window.content = self.table
-        # Show the main window
-        self.second_window.show()
+            table = toga.Table(headings=columns, style=Pack(flex=1,font_size=10))
+            box.add(table)
+        
+        else:
+            error_label = toga.Label('No data found or an error occurred.',style=Pack(padding=10,font_size=14))
+            box.add(error_label)
 
-    def retrieve_accounts():
+        self.content = box
+        self.show()
+        
+        
+    def retrieve_accounts(widget):
         try:
             cnxn = pyodbc.connect(
                 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=False)
@@ -61,8 +76,8 @@ class GetAccts(toga.App):
             params = None
             cursor = cnxn.cursor()
             cursor.execute("{CALL paca.getAccounts_v1}", params)
-            rows = cursor.fetchall()
-            data = [tuple(row) for row in rows]
+            #rows = cursor.fetchall()
+            data = [(row.ACCOUNT_NUM, row.ACCOUNT_HONORIFICS, row.ACCOUNT_FIRST_NAME,row.ACCOUNT_LAST_NAME, row.ACCOUNT_SUFFIX,row.ACCOUNT_STREET_ADD_1,row.ACCOUNT_STREET_ADD_2,row.ACCOUNT_CITY,row.ACCOUNT_STATE,row.ACCOUNT_ZIP,row.ACCOUNT_PO_BOX,row.ACCOUNT_DATE_START,row.ACCOUNT_DATE_RENEWAL,row.ACCOUNT_TYPE) for row in cursor.fetchall()]
             return data
 
         except Exception as ERROR:
@@ -70,7 +85,6 @@ class GetAccts(toga.App):
         finally:
             cursor.close()
             cnxn.close()
-
 
 snapshot = tracemalloc.take_snapshot()
 top_stats = snapshot.statistics('lineno')

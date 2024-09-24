@@ -9,7 +9,7 @@ author = "Jacob Shuster"
 author_email = "jcbshuster@yahoo.com"
 
 [tool.briefcase.app.pythonautoclaimsapp]
-formal_name = "pythonautoclaimsapp"
+formal_name = "Python Auto Claims App"
 description = "Python Auto Claims app - Simple. Intended for interactions with an MS SQL DB. In it's current state the Python side has not yet been started. Therefaore, in it's base form."
 long_description = """More details about the app should go here.
 """
@@ -21,6 +21,7 @@ test_sources = [
 ]
 
 requires = [
+"pyodbc"
 ]
 test_requires = [
     "pytest",
