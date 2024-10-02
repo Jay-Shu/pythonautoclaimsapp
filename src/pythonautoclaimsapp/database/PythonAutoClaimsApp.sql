@@ -129,6 +129,7 @@
 		37. Query hints (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-query?view=sql-server-ver16
 		38. sys.types (Transact-SQL), https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-types-transact-sql?view=sql-server-ver16
 		39. SQL Injection, https://learn.microsoft.com/en-us/sql/relational-databases/security/sql-injection?view=sql-server-ver16
+		39. DSN and Connection String Keywords and Attributes, https://learn.microsoft.com/en-us/sql/connect/odbc/dsn-connection-string-attribute?view=sql-server-ver16
 
 
 	Author Notes:

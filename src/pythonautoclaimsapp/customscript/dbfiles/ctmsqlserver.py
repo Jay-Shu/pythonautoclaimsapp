@@ -65,7 +65,7 @@ class GetAccts(toga.App):
             box.add(error_label)
 
         self.content = box
-        self.show()
+        return self.show()
         
         
     def retrieve_accounts(widget):

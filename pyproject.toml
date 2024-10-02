@@ -1,6 +1,6 @@
 # This project was generated with 0.3.19 using template: https://github.com/beeware/briefcase-template@v0.3.19
 [tool.briefcase]
-project_name = "pythonautoclaimsapp"
+project_name = "Python Auto Claims App"
 bundle = "com.self.published"
 version = "0.0.1"
 url = "https://published.self.com/pythonautoclaimsapp"
