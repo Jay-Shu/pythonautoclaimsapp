@@ -39,6 +39,11 @@ from toga.style.pack import COLUMN, ROW, CENTER
 from toga.sources import ListSource
 
 from pythonautoclaimsapp.function_library.accounts import *
+from pythonautoclaimsapp.function_library.vehicles import *
+from pythonautoclaimsapp.function_library.homes import *
+from pythonautoclaimsapp.function_library.policies import *
+from pythonautoclaimsapp.function_library.vehiclecoverages import *
+from pythonautoclaimsapp.function_library.vehicleclaims import *
 
 tracemalloc.start()
 
@@ -85,77 +90,39 @@ class PythonAutoClaimsApp(toga.App):
         self.main_window.show()
 
     def _accounts_callback(self,widget):
+        # Stage for Menu
+        # Needs the correct pieces
         AccountsClass.accounts_secondary_box(self,widget)
         
 
     def _homes_callback(self,widget):
-    # Create the second window
-        second_window = toga.Window(title="Homes")
-        second_label = toga.Label("This is the second window", style=Pack(padding=10))
-        second_box = toga.Box(children=[second_label], style=Pack(direction=COLUMN))
-    
-    # Add the second box (content) to the second window
-        second_window.content = second_box
-    
-    # Show the second window
-        self.windows.add(second_window)
-        second_window.show()
+        # Stage for Menu
+        # Needs the correct pieces
+        HomesClass.homes_secondary_box(self,widget)
 
 
     def _vehicles_callback(self,widget):
-    # Create the second window
-        second_window = toga.Window(title="Vehicles")
-        second_label = toga.Label("This is the second window", style=Pack(padding=10))
-        second_box = toga.Box(children=[second_label], style=Pack(direction=COLUMN))
-    
-    # Add the second box (content) to the second window
-        second_window.content = second_box
-    
-    # Show the second window
-        self.windows.add(second_window)
-        second_window.show()
+        # Stage for Menu
+        # Needs the correct pieces
+        VehiclesClass.vehicles_secondary_box(self,widget)
 
 
     def _policies_callback(self,widget):
-    # Create the second window
-        second_window = toga.Window(title="Policies")
-        second_label = toga.Label("This is the second window", style=Pack(padding=10))
-        second_box = toga.Box(children=[second_label], style=Pack(direction=COLUMN))
-    
-    # Add the second box (content) to the second window
-        second_window.content = second_box
-    
-    # Show the second window
-        self.windows.add(second_window)
-        second_window.show()
+        # Stage for Menu
+        # Needs the correct pieces
+        PoliciesClass.policies_secondary_box(self,widget)
 
 
     def _vehicle_coverages_callback(self,widget):
-    # Create the second window
-        second_window = toga.Window(title="Vehicle Coverages")
-        second_label = toga.Label("This is the second window", style=Pack(padding=10))
-        second_box = toga.Box(children=[second_label], style=Pack(direction=COLUMN))
-    
-    # Add the second box (content) to the second window
-        second_window.content = second_box
-    
-    # Show the second window
-        self.windows.add(second_window)
-        second_window.show()
+        # Stage for Menu
+        # Needs the correct pieces
+        VehicleCoveragesClass.vehicle_coverages_secondary_box(self,widget)
 
 
     def _vehicle_claims_callback(self,widget):
-    # Create the second window
-        second_window = toga.Window(title="Vehicle Claims")
-        second_label = toga.Label("This is the second window", style=Pack(padding=10))
-        second_box = toga.Box(children=[second_label], style=Pack(direction=COLUMN))
-    
-    # Add the second box (content) to the second window
-        second_window.content = second_box
-    
-    # Show the second window
-        self.windows.add(second_window)
-        second_window.show()
+        # Stage for Menu
+        # Needs the correct pieces
+        VehicleClaimsClass.vehicle_claims_secondary_box(self,widget)
 
 
 def main():

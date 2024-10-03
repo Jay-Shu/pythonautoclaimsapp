@@ -14,7 +14,7 @@ from pprint import *
 # from togatesting.function_library.accounts import *
 
 
-class AccountsClass:
+class VehicleClaimsClass:
     def __init__(self,cnxn,data,columns):
         self.app = toga.App
         self.cnxn = cnxn
@@ -23,7 +23,7 @@ class AccountsClass:
         self.columns = columns
         self.list_source = toga.sources.ListSource
 
-    def getAccounts():
+    def getVehicleClaims():
         #global data
         
         try:
@@ -31,13 +31,13 @@ class AccountsClass:
                 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=True)
             cnxn.setencoding('utf-8')
             cursor = cnxn.cursor() # Cursor is necessary for it to function properly
-            cursor.execute("{CALL paca.getAccounts_v1}") # This will be moved along with the connection
+            cursor.execute("{CALL paca.getVehicleClaims_v1}") # This will be moved along with the connection
             #tempcount = cursor.rowcount
             #print(tempcount)
             """
             A list Source was necessary for proper attribute assignment.
             """
-            columns = ['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE']
+            columns = ["VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER","VEHICLE_CLAIMS_ACCOUNT_NUM","VEHICLE_CLAIMS_VEHICLE_VIN","VEHICLE_CLAIMS_TITLE","VEHICLE_CLAIMS_DESCRIPTION","VEHICLE_CLAIMS_CLAIM_TYPE","VEHICLE_CLAIMS_EXTERNAL_CASE_NUMBER","VEHICLE_CLAIMS_DEDUCTIBLE","VEHICLE_CLAIMS_TOTAL_ESTIMATE","VEHICLE_CLAIMS_STATUS","VEHICLE_CLAIMS_MEDIA","VEHICLE_CLAIMS_TOW_COMPANY"]
 
             list_source = ListSource(
             accessors=columns
@@ -52,7 +52,7 @@ class AccountsClass:
 
             rows = cursor.fetchall()
             for row in rows:
-                list_source.append({'ACCOUNT_NUM':row[0],'ACCOUNT_HONORIFICS':row[1],'ACCOUNT_FIRST_NAME':row[2],'ACCOUNT_LAST_NAME':row[3],'ACCOUNT_SUFFIX':row[4],'ACCOUNT_STREET_ADD_1':row[5],'ACCOUNT_STREET_ADD_2':row[6],'ACCOUNT_CITY':row[7],'ACCOUNT_STATE':row[8],'ACCOUNT_ZIP':row[9],'ACCOUNT_PO_BOX':row[10],'ACCOUNT_DATE_START':row[11],'ACCOUNT_DATE_RENEWAL':row[12],'ACCOUNT_TYPE':row[13]})
+                list_source.append({'VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER':row[0],'VEHICLE_CLAIMS_ACCOUNT_NUM':row[1],'VEHICLE_CLAIMS_VEHICLE_VIN':row[2],'VEHICLE_CLAIMS_TITLE':row[3],'VEHICLE_CLAIMS_DESCRIPTION':row[4],'VEHICLE_CLAIMS_CLAIM_TYPE':row[5],'VEHICLE_CLAIMS_EXTERNAL_CASE_NUMBER':row[6],'VEHICLE_CLAIMS_DEDUCTIBLE':row[7],'VEHICLE_CLAIMS_TOTAL_ESTIMATE':row[8],'VEHICLE_CLAIMS_STATUS':row[9],'VEHICLE_CLAIMS_MEDIA':row[10],'VEHICLE_CLAIMS_TOW_COMPANY':row[11]})
                 #print(list_source[i])
                 #time.sleep(1)
                 """             
@@ -85,23 +85,23 @@ class AccountsClass:
             
         return columns,list_source
     
-    def accounts_secondary_box(self,widget):
+    def vehicle_claims_secondary_box(self,widget):
         #global columns,list_source,table
 
-        columns,list_source = AccountsClass.getAccounts()
+        columns,list_source = VehicleClaimsClass.getVehicleClaims()
         #print(list_source[0])
 
-        second_window = toga.Window(title="Accounts")
-        label = toga.Label('Accounts Results',style=Pack(padding=10,font_size=14))
+        second_window = toga.Window(title="Vehicle Claims")
+        label = toga.Label('Vehicle Claims Results',style=Pack(padding=10,font_size=14))
         
         
         try:
              table = toga.Table(
-                    headings=['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE'],style=Pack(direction=COLUMN,alignment=CENTER,font_size=14),
+                    headings=["VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER","VEHICLE_CLAIMS_ACCOUNT_NUM","VEHICLE_CLAIMS_VEHICLE_VIN","VEHICLE_CLAIMS_TITLE","VEHICLE_CLAIMS_DESCRIPTION","VEHICLE_CLAIMS_CLAIM_TYPE","VEHICLE_CLAIMS_EXTERNAL_CASE_NUMBER","VEHICLE_CLAIMS_DEDUCTIBLE","VEHICLE_CLAIMS_TOTAL_ESTIMATE","VEHICLE_CLAIMS_STATUS","VEHICLE_CLAIMS_MEDIA","VEHICLE_CLAIMS_TOW_COMPANY"],style=Pack(direction=COLUMN,alignment=CENTER,font_size=14),
                     #headings=columns,
                     #selection=data
                     data=list_source,
-                    accessors=['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE']
+                    accessors=["VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER","VEHICLE_CLAIMS_ACCOUNT_NUM","VEHICLE_CLAIMS_VEHICLE_VIN","VEHICLE_CLAIMS_TITLE","VEHICLE_CLAIMS_DESCRIPTION","VEHICLE_CLAIMS_CLAIM_TYPE","VEHICLE_CLAIMS_EXTERNAL_CASE_NUMBER","VEHICLE_CLAIMS_DEDUCTIBLE","VEHICLE_CLAIMS_TOTAL_ESTIMATE","VEHICLE_CLAIMS_STATUS","VEHICLE_CLAIMS_MEDIA","VEHICLE_CLAIMS_TOW_COMPANY"]
                 )
         except Exception as ERROR:
             print(ERROR)
@@ -116,4 +116,4 @@ class AccountsClass:
         return second_window.show()
 
 def main():
-    return AccountsClass()
+    return VehicleClaimsClass()

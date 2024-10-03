@@ -23,6 +23,7 @@
         2024-09-21: getVehicles_v1, getVehicles_v2, getVechilces_v3.
         2024-09-22: Resolved Syntax and spelling issues.
         2024-09-24: getPolicies_v1, getVehicleCoverages_v1.
+        2024-10-01: Temporarily added an alternative getAccounts_v1, later testing concluded this was not necessary.
 
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -687,6 +688,7 @@ VEHICLE_CLAIMS_INTERNAL_CASE_NUMBER,
 	VEHICLE_CLAIMS_STATUS,
 	VEHICLE_CLAIMS_MEDIA,
 	VEHICLE_CLAIMS_TOW_COMPANY
+  FROM paca.VEHICLE_CLAIMS
 END TRY
 BEGIN CATCH
 SELECT 

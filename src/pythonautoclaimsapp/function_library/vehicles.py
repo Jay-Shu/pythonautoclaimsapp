@@ -14,7 +14,7 @@ from pprint import *
 # from togatesting.function_library.accounts import *
 
 
-class AccountsClass:
+class VehiclesClass:
     def __init__(self,cnxn,data,columns):
         self.app = toga.App
         self.cnxn = cnxn
@@ -23,21 +23,21 @@ class AccountsClass:
         self.columns = columns
         self.list_source = toga.sources.ListSource
 
-    def getAccounts():
-        #global data
+    def getVehicles():
+        global list_source
         
         try:
             cnxn = pyodbc.connect(
                 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=True)
             cnxn.setencoding('utf-8')
             cursor = cnxn.cursor() # Cursor is necessary for it to function properly
-            cursor.execute("{CALL paca.getAccounts_v1}") # This will be moved along with the connection
+            cursor.execute("{CALL paca.getVehicles_v1}") # This will be moved along with the connection
             #tempcount = cursor.rowcount
             #print(tempcount)
             """
             A list Source was necessary for proper attribute assignment.
             """
-            columns = ['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE']
+            columns = ["VEHICLE_ACCOUNT_NUM","VEHICLE_VIN","VEHICLE_YEAR","VEHICLE_MAKE","VEHICLE_MODEL","VEHICLE_PREMIUM","VEHICLE_ANNUAL_MILEAGE","VEHICLE_VEHICLE_USE",       "VEHICLE_ADDRESS1_GARAGED","VEHICLE_ADDRESS2_GARAGED"]
 
             list_source = ListSource(
             accessors=columns
@@ -52,7 +52,7 @@ class AccountsClass:
 
             rows = cursor.fetchall()
             for row in rows:
-                list_source.append({'ACCOUNT_NUM':row[0],'ACCOUNT_HONORIFICS':row[1],'ACCOUNT_FIRST_NAME':row[2],'ACCOUNT_LAST_NAME':row[3],'ACCOUNT_SUFFIX':row[4],'ACCOUNT_STREET_ADD_1':row[5],'ACCOUNT_STREET_ADD_2':row[6],'ACCOUNT_CITY':row[7],'ACCOUNT_STATE':row[8],'ACCOUNT_ZIP':row[9],'ACCOUNT_PO_BOX':row[10],'ACCOUNT_DATE_START':row[11],'ACCOUNT_DATE_RENEWAL':row[12],'ACCOUNT_TYPE':row[13]})
+                list_source.append({'VEHICLE_ACCOUNT_NUM':row[0],'VEHICLE_VIN':row[1],'VEHICLE_YEAR':row[2],'VEHICLE_MAKE':row[3],'VEHICLE_MODEL':row[4],'VEHICLE_PREMIUM':row[5],'VEHICLE_ANNUAL_MILEAGE':row[6],'VEHICLE_VEHICLE_USE':row[7],'VEHICLE_ADDRESS1_GARAGED':row[8],'VEHICLE_ADDRESS2_GARAGED':row[9]})
                 #print(list_source[i])
                 #time.sleep(1)
                 """             
@@ -83,25 +83,45 @@ class AccountsClass:
             cnxn.close()
             #PythonListener.disconnect_connection(conn) # We need to disconnect at some point when the application closes.
             
-        return columns,list_source
+            return list_source
     
-    def accounts_secondary_box(self,widget):
+    def vehicles_secondary_box(self,widget):
         #global columns,list_source,table
 
-        columns,list_source = AccountsClass.getAccounts()
+        list_source = VehiclesClass.getVehicles()
         #print(list_source[0])
 
-        second_window = toga.Window(title="Accounts")
-        label = toga.Label('Accounts Results',style=Pack(padding=10,font_size=14))
+        second_window = toga.Window(title="Vehicles")
+        label = toga.Label('Vehicles Results',style=Pack(padding=10,font_size=14))
         
         
         try:
              table = toga.Table(
-                    headings=['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE'],style=Pack(direction=COLUMN,alignment=CENTER,font_size=14),
+                    headings=[
+                        "VEHICLE_ACCOUNT_NUM",
+	                    "VEHICLE_VIN",
+	                    "VEHICLE_YEAR",
+	                    "VEHICLE_MAKE",
+	                    "VEHICLE_MODEL",
+	                    "VEHICLE_PREMIUM",
+	                    "VEHICLE_ANNUAL_MILEAGE",
+	                    "VEHICLE_VEHICLE_USE",
+	                    "VEHICLE_ADDRESS1_GARAGED",
+	                    "VEHICLE_ADDRESS2_GARAGED"
+                        ],style=Pack(direction=COLUMN,alignment=CENTER,font_size=14),
                     #headings=columns,
                     #selection=data
                     data=list_source,
-                    accessors=['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE']
+                    accessors=["VEHICLE_ACCOUNT_NUM",
+	                    "VEHICLE_VIN",
+	                    "VEHICLE_YEAR",
+	                    "VEHICLE_MAKE",
+	                    "VEHICLE_MODEL",
+	                    "VEHICLE_PREMIUM",
+	                    "VEHICLE_ANNUAL_MILEAGE",
+	                    "VEHICLE_VEHICLE_USE",
+	                    "VEHICLE_ADDRESS1_GARAGED",
+	                    "VEHICLE_ADDRESS2_GARAGED"]
                 )
         except Exception as ERROR:
             print(ERROR)
@@ -109,11 +129,11 @@ class AccountsClass:
         finally:
            pass
    
-        second_box = toga.Box(children=[label,table], style=Pack(direction=COLUMN,alignment=CENTER,font_size=14))
+        second_box = toga.Box(children=[label,table], style=Pack(direction=COLUMN,alignment=CENTER,font_size=14,flex=0))
         second_window.content = second_box
         #second_window.show()
 
         return second_window.show()
 
 def main():
-    return AccountsClass()
+    return VehiclesClass()

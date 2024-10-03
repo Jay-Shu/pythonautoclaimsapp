@@ -14,7 +14,7 @@ from pprint import *
 # from togatesting.function_library.accounts import *
 
 
-class AccountsClass:
+class HomesClass:
     def __init__(self,cnxn,data,columns):
         self.app = toga.App
         self.cnxn = cnxn
@@ -23,7 +23,7 @@ class AccountsClass:
         self.columns = columns
         self.list_source = toga.sources.ListSource
 
-    def getAccounts():
+    def getHomes():
         #global data
         
         try:
@@ -31,13 +31,13 @@ class AccountsClass:
                 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=True)
             cnxn.setencoding('utf-8')
             cursor = cnxn.cursor() # Cursor is necessary for it to function properly
-            cursor.execute("{CALL paca.getAccounts_v1}") # This will be moved along with the connection
+            cursor.execute("{CALL paca.getHomes_v1}") # This will be moved along with the connection
             #tempcount = cursor.rowcount
             #print(tempcount)
             """
             A list Source was necessary for proper attribute assignment.
             """
-            columns = ['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE']
+            columns = ["HOMES_INTERNAL_ID","HOMES_ACCOUNT_NUM","HOMES_PREMIUM","HOMES_ADDRESS","HOMES_SEC1_DW","HOMES_SEC1_DWEX","HOMES_SEC1_PER_PROP","HOMES_SEC1_LOU","HOMES_SEC1_FD_SC","HOMES_SEC1_SL","HOMES_SEC1_BU_SD","HOMES_SEC2_PL","HOMES_SEC2_DPO","HOMES_SEC2_MPO"]
 
             list_source = ListSource(
             accessors=columns
@@ -52,7 +52,7 @@ class AccountsClass:
 
             rows = cursor.fetchall()
             for row in rows:
-                list_source.append({'ACCOUNT_NUM':row[0],'ACCOUNT_HONORIFICS':row[1],'ACCOUNT_FIRST_NAME':row[2],'ACCOUNT_LAST_NAME':row[3],'ACCOUNT_SUFFIX':row[4],'ACCOUNT_STREET_ADD_1':row[5],'ACCOUNT_STREET_ADD_2':row[6],'ACCOUNT_CITY':row[7],'ACCOUNT_STATE':row[8],'ACCOUNT_ZIP':row[9],'ACCOUNT_PO_BOX':row[10],'ACCOUNT_DATE_START':row[11],'ACCOUNT_DATE_RENEWAL':row[12],'ACCOUNT_TYPE':row[13]})
+                list_source.append({'HOMES_INTERNAL_ID':row[0],'HOMES_ACCOUNT_NUM':row[1],'HOMES_PREMIUM':row[2],'HOMES_ADDRESS':row[3],'HOMES_SEC1_DW':row[4],'HOMES_SEC1_DWEX':row[5],'HOMES_SEC1_PER_PROP':row[6],'HOMES_SEC1_LOU':row[7],'HOMES_SEC1_FD_SC':row[8],'HOMES_SEC1_SL':row[9],'HOMES_SEC1_BU_SD':row[10],'HOMES_SEC2_PL':row[11],'HOMES_SEC2_DPO':row[12],'HOMES_SEC2_MPO':row[13]})
                 #print(list_source[i])
                 #time.sleep(1)
                 """             
@@ -85,23 +85,23 @@ class AccountsClass:
             
         return columns,list_source
     
-    def accounts_secondary_box(self,widget):
+    def homes_secondary_box(self,widget):
         #global columns,list_source,table
 
-        columns,list_source = AccountsClass.getAccounts()
+        columns,list_source = HomesClass.getHomes()
         #print(list_source[0])
 
-        second_window = toga.Window(title="Accounts")
-        label = toga.Label('Accounts Results',style=Pack(padding=10,font_size=14))
+        second_window = toga.Window(title="Homes")
+        label = toga.Label('Homes Results',style=Pack(padding=10,font_size=14))
         
         
         try:
              table = toga.Table(
-                    headings=['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE'],style=Pack(direction=COLUMN,alignment=CENTER,font_size=14),
+                    headings=["HOMES_INTERNAL_ID","HOMES_ACCOUNT_NUM","HOMES_PREMIUM","HOMES_ADDRESS","HOMES_SEC1_DW","HOMES_SEC1_DWEX","HOMES_SEC1_PER_PROP","HOMES_SEC1_LOU","HOMES_SEC1_FD_SC","HOMES_SEC1_SL","HOMES_SEC1_BU_SD","HOMES_SEC2_PL","HOMES_SEC2_DPO","HOMES_SEC2_MPO"],style=Pack(direction=COLUMN,alignment=CENTER,font_size=14),
                     #headings=columns,
                     #selection=data
                     data=list_source,
-                    accessors=['ACCOUNT_NUM','ACCOUNT_HONORIFICS','ACCOUNT_FIRST_NAME','ACCOUNT_LAST_NAME','ACCOUNT_SUFFIX','ACCOUNT_STREET_ADD_1','ACCOUNT_STREET_ADD_2','ACCOUNT_CITY','ACCOUNT_STATE','ACCOUNT_ZIP','ACCOUNT_PO_BOX','ACCOUNT_DATE_START','ACCOUNT_DATE_RENEWAL','ACCOUNT_TYPE']
+                    accessors=["HOMES_INTERNAL_ID","HOMES_ACCOUNT_NUM","HOMES_PREMIUM","HOMES_ADDRESS","HOMES_SEC1_DW","HOMES_SEC1_DWEX","HOMES_SEC1_PER_PROP","HOMES_SEC1_LOU","HOMES_SEC1_FD_SC","HOMES_SEC1_SL","HOMES_SEC1_BU_SD","HOMES_SEC2_PL","HOMES_SEC2_DPO","HOMES_SEC2_MPO"]
                 )
         except Exception as ERROR:
             print(ERROR)
@@ -116,4 +116,4 @@ class AccountsClass:
         return second_window.show()
 
 def main():
-    return AccountsClass()
+    return HomesClass()
