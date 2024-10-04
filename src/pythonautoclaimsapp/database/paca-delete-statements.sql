@@ -12,6 +12,7 @@
         2024-08-19: Beginning the process of overhauling to Serialization and Deserialization of JSON.
         2024-08-19: Added SET NOCOUNT ON to all Stored Procedures per Best Practices.
         2024-08-19: Completed overhaul of Stored Procedures.
+        2024-10-04: Added Schema to Stored Procedures. Without a Schema they will default to dbo and we need it in paca.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -68,7 +69,7 @@
     Use the UNION ALL operator instead of the UNION or OR operators, unless there is a specific need for distinct values. The UNION ALL operator requires less processing overhead because duplicates aren't filtered out of the result set.
 **/
 
-CREATE PROCEDURE removeAccount_v1
+CREATE PROCEDURE paca.removeAccount_v1
 @json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON;
@@ -107,7 +108,7 @@ RETURN;
 
 GO
 
-CREATE PROCEDURE removeHome_v1
+CREATE PROCEDURE paca.removeHome_v1
 @json NVARCHAR(MAX)
 /*
   For the next release this needs to be updated to use a unique identifier
@@ -151,7 +152,7 @@ RETURN;
 
 GO
 
-CREATE PROCEDURE removeVehicle_v1
+CREATE PROCEDURE paca.removeVehicle_v1
 @json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON;
@@ -193,7 +194,7 @@ RETURN;
 
 GO
 
-CREATE PROCEDURE removePolicy_v1
+CREATE PROCEDURE paca.removePolicy_v1
 @json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON;
@@ -231,7 +232,7 @@ RETURN;
 GO
 
 
-CREATE PROCEDURE removeVehicleCoverages_v1
+CREATE PROCEDURE paca.removeVehicleCoverages_v1
 @json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON;
@@ -268,7 +269,7 @@ RETURN;
 
 GO
 
-CREATE PROCEDURE removeVehicleClaims_v1
+CREATE PROCEDURE paca.removeVehicleClaims_v1
 @json NVARCHAR(11)
 AS
 SET NOCOUNT ON;
