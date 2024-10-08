@@ -1,6 +1,5 @@
-from pythonautoclaimsapp.function_library.accountsactions import *
-from pythonautoclaimsapp.function_library.accountsmenu import *
-from pythonautoclaimsapp.function_library.accounts import *
+from pythonautoclaimsapp.function_library.accountsactions import UpdAccountClass,CreAccountClass,DeleteAccountClass
+from pythonautoclaimsapp.function_library.accounts import AccountsClass
 from toga.style.pack import COLUMN, ROW, CENTER
 from toga.style import Pack
 import toga.sources
@@ -13,15 +12,40 @@ logger = logging.getLogger(__name__)
 
 tracemalloc.start()
 
-
 class AccountsMenuClass:
     def __init__(self, cnxn, data, columns):
         self.app = toga.App
+        self.widget = toga.App.widget
         self.cnxn = cnxn
         self.data = data
         self.table = toga.Table
         self.columns = columns
         self.list_source = toga.sources.ListSource
+        
+    def _get_accounts_callback(self):
+        # Stage for Menu
+        # Needs the correct pieces
+        # Refactor of this later is needed.
+        widget = self.app.widgets
+        return AccountsClass.accounts_secondary_box(self, widget)
+
+    def _update_account_callback(self):
+        # Stage for Menu
+        # Needs the correct pieces
+        widget = self.app.widgets
+        return UpdAccountClass.updateAccount(self, widget)
+
+    def _create_account_callback(self):
+        # Stage for Menu
+        # Needs the correct pieces
+        widget = self.app.widgets
+        return CreAccountClass.createAccount(self, widget)
+
+    def _delete_account_callback(self):
+        # Stage for Menu
+        # Needs the correct pieces
+        widget = self.app.widgets
+        return DeleteAccountClass.deleteAccount(self, widget)
 
     def accountsMenu(self, widget):
         accountsmenu = toga.Box(style=Pack(direction=COLUMN))
@@ -46,26 +70,7 @@ class AccountsMenuClass:
 
         return self.account_window.show()
 
-    def _get_accounts_callback(self, widget):
-        # Stage for Menu
-        # Needs the correct pieces
-        # Refactor of this later is needed.
-        AccountsClass.accounts_secondary_box(self, widget)
-
-    def _update_account_callback(self, widget):
-        # Stage for Menu
-        # Needs the correct pieces
-        UpdAccountClass.updateAccount(self, widget)
-
-    def _create_account_callback(self, widget):
-        # Stage for Menu
-        # Needs the correct pieces
-        CreAccountClass.createAccount(self, widget)
-
-    def _delete_account_callback(self, widget):
-        # Stage for Menu
-        # Needs the correct pieces
-        DeleteAccountClass.deleteAccount(self, widget)
+    
 
 
 snapshot = tracemalloc.take_snapshot()

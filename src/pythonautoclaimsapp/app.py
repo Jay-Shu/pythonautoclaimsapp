@@ -27,7 +27,7 @@ Author Notes:
     Our connection to MS SQL Server.
 """
 
-from pythonautoclaimsapp.function_library.accountsmenu import *
+from pythonautoclaimsapp.function_library.accountsmenu import AccountsMenuClass
 from pythonautoclaimsapp.function_library.vehicleclaims import *
 from pythonautoclaimsapp.function_library.vehiclecoverages import *
 from pythonautoclaimsapp.function_library.policies import *

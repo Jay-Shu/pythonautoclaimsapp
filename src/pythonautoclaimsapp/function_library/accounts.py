@@ -13,6 +13,8 @@ from pprint import *
 # This is the location when referenced by other py files.
 # from togatesting.function_library.accounts import *
 
+# THIS FILE NEEDS TO MERGE WITH accountsactions/py
+
 
 class AccountsClass:
     def __init__(self,cnxn,data,columns):
@@ -81,7 +83,6 @@ class AccountsClass:
         finally:
             cursor.close()
             cnxn.close()
-            #PythonListener.disconnect_connection(conn) # We need to disconnect at some point when the application closes.
             
         return columns,list_source
     

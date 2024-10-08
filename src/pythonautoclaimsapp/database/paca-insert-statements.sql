@@ -17,6 +17,7 @@
         2024-08-18: Overhaul of addAccount_v1. Serialization and Deserailization for preventing SQL Injection.
         2024-08-18: Overhaul of addHome_v1, addVehicle_v1, and addVehicleClaim_v1.
         2024-08-19: Added addPolicy_v1, and addVehicleCoverage_v1.
+        2024-10-06: HOME_ADDRESS adding strict keyword.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -435,7 +436,7 @@ SELECT
 FROM OPENJSON(@json) WITH (
     HOMES_ACCOUNT_NUM NVARCHAR(11) 'strict $.HOMES_ACCOUNT_NUM',
     HOMES_PREMIUM 	DECIMAL(10,2) '$.HOMES_PREMIUM',
-	  HOMES_ADDRESS 	NVARCHAR(128) '$.HOMES_ADDRESS',
+	  HOMES_ADDRESS 	NVARCHAR(128) 'strict $.HOMES_ADDRESS',
 	  HOMES_SEC1_DW		DECIMAL(10,2) '$.HOMES_SEC1_DW',
 	  HOMES_SEC1_DWEX DECIMAL(10,2) '$.HOMES_SEC1_DWEX',
 	  HOMES_SEC1_PER_PROP DECIMAL(10,2) '$.HOMES_SEC1_PER_PROP',

@@ -130,13 +130,20 @@
 		38. sys.types (Transact-SQL), https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-types-transact-sql?view=sql-server-ver16
 		39. SQL Injection, https://learn.microsoft.com/en-us/sql/relational-databases/security/sql-injection?view=sql-server-ver16
 		39. DSN and Connection String Keywords and Attributes, https://learn.microsoft.com/en-us/sql/connect/odbc/dsn-connection-string-attribute?view=sql-server-ver16
-
+		40. DBCC DBREINDEX (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-dbreindex-transact-sql?view=sql-server-ver16
+		41. DBCC CHECKTABLE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checktable-transact-sql?view=sql-server-ver16
+		42. DBCC CHECKALLOC (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checkalloc-transact-sql?view=sql-server-ver16
+		43. DBCC CHECKCONSTRAINTS (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checkconstraints-transact-sql?view=sql-server-ver16
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
 		GO Keyword does not require a semi-colon. As it would be redundant.
 		BEGIN...END Blocks have been phased out completely for TRY...CATCH and GO.
-		DBCC CHECKIDENT(N'schema.table_name') and use DBCC CHECKIDENT(N'schema.table_name',RESEED,value)
+		DBCC CHECKIDENT(N'schema.table_name') and use DBCC CHECKIDENT(N'schema.table_name',RESEED)
+		DBCC DBREINDEX(table_name,[,index_name[,fillfactor]]) for our purposes fillfactor will not be used as well as index_name as these values do not blanket all
+		    indexes within a given table. We can build a query for executing this on demand or as a job.
+		DBCC CHECKTABLE will be utilized to check the integrity of all pages and structures that mup up the table or index.
+		    This also can access a view as well as tables.
 
 		Calculation for DECIMAL(X,Y): (10 ^ (x-y)) - (10 ^ -y) . Absolute and Negative Values.
 		Logical Processing Order:	
@@ -226,17 +233,17 @@ GO
 -- Updated Column Names for Easier Readability.
 
 SELECT
-  				physical_memory_in_use_kb/1024 AS N'SQL Physical Memory in use MB',
-    			large_page_allocations_kb/1024 AS N'SQL Large Page Allocations MB',
-    			locked_page_allocations_kb/1024 AS N'SQL Locked Page Allocations MB',
-    			virtual_address_space_reserved_kb/1024 AS N'SQL VAS Reserved MB - For Multi-page Allocator',
-    			virtual_address_space_committed_kb/1024 AS N'SQL VAS Committed MB - For Multi-page Allocator',
-    			virtual_address_space_available_kb/1024 AS N'SQL VAS Available MB - For Multi-page Allocator',
-    			page_fault_count AS N'SQL Page Fault Count',
-    			memory_utilization_percentage AS N'SQL Memory Utilization Percentage',
-    			process_physical_memory_low AS N'SQL Process Physical Memory Low',
-    			process_virtual_memory_low AS N'SQL Process Virtual Memory Low'
-			FROM sys.dm_os_process_memory;
+  	physical_memory_in_use_kb/1024 AS N'SQL Physical Memory in use MB',
+    large_page_allocations_kb/1024 AS N'SQL Large Page Allocations MB',
+    locked_page_allocations_kb/1024 AS N'SQL Locked Page Allocations MB',
+    virtual_address_space_reserved_kb/1024 AS N'SQL VAS Reserved MB - For Multi-page Allocator',
+    virtual_address_space_committed_kb/1024 AS N'SQL VAS Committed MB - For Multi-page Allocator',
+    virtual_address_space_available_kb/1024 AS N'SQL VAS Available MB - For Multi-page Allocator',
+    page_fault_count AS N'SQL Page Fault Count',
+    memory_utilization_percentage AS N'SQL Memory Utilization Percentage',
+    process_physical_memory_low AS N'SQL Process Physical Memory Low',
+    process_virtual_memory_low AS N'SQL Process Virtual Memory Low'
+		FROM sys.dm_os_process_memory;
 
 GO
 
@@ -709,10 +716,10 @@ GO
 /**
 
 TO-DO: Insert Test Data.
-	Accounts: Not Done. Need;3.
-	Vehicles: Not Done. Need; 3.
-	Homes: Not Done. Need; 3.
-	Policies: Not Done. Need; 3.
+	Accounts: Done. Need; 3.
+	Vehicles: Done. Need; 3.
+	Homes: Done. Need; 3.
+	Policies: Done. Need; 3.
 
 **/
 
@@ -858,9 +865,7 @@ END CATCH;
 GO
 
 /*
-	In order to expose the web service we need to make
-	a Queue. A queue may have a stored procedure associated with it.
-	Therefore, These will need to designed.
+	This is no longer being pursued.
 */
 
 /*
