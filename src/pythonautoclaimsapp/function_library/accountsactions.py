@@ -75,236 +75,6 @@ class UpdAccountClass:
         self.accountsJson = accountsJson
         self.key = key
         
-    def _cancel_handler(self):
-        return self.account_window.close()
-        pass
-
-    def _update_account_handler(inputColumn, input, inputValue, accountsJson):
-        # input is
-        if input == True:
-            inputValue = 'NULL'
-        elif input == False:
-            logging.debug("No Change in Input Value")
-            inputValue = inputValue
-            pass
-
-        if inputColumn in accountsJson:
-            accountsJson[inputColumn] = inputValue
-
-        return accountsJson
-        pass
-        
-    def _submission_handler(self, accountsJson, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText, accountHonorificsSwitch, accountFNSwitch, accountLNSwitch, accountSuffixSwitch, accountStreetAdd1Switch, accountStreetAdd2Switch, accountCitySwitch, accountStateSwitch, accountZIPSwitch, accountPOBoxSwitch, accountDateStartSwitch, accountDateRenewalSwitch, accountTypeSwitch):
-        # First we need to connect to the Database until we establish a persistent connection.
-        # global inputColumn,input,inputValue
-        #Beginning of For-Loop
-        for key in accountsJson:
-            #accountsJson[key]
-            match key:
-               # ACCOUNT_NUM will later be removed from processing. An update to it should fail anyhow due to key constraints.
-                # case "ACCOUNT_NUM":
-                # if accountsJson[key] is not None:
-                #    accountsJson[key] = accountNumText
-                # elif accountsJson[key] is None:
-                #   raise Exception("You must provide an Account Number to Update.")
-                # not necessary, we should never be updating the Account Num.
-                # self._update_account_handler(key,input,accountsJson[key],accountsJson)
-
-                case "ACCOUNT_HONORIFICS":
-                    if accountHonorificsSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountHonorificsText
-
-                    self._update_account_handler(
-                        key, accountHonorificsSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_FIRST_NAME":
-                    if accountFNSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountFNText
-
-                    self._update_account_handler(
-                        key, accountFNSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_LAST_NAME":
-                    if accountLNSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountLNText
-
-                    self._update_account_handler(
-                        key, accountLNSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_SUFFIX":
-                    if accountSuffixSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountSuffixText
-
-                    self._update_account_handler(
-                        key, accountSuffixSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_STREET_ADD_1":
-                    if accountStreetAdd1Switch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountStreetAdd1Text
-
-                    self._update_account_handler(
-                        key, accountStreetAdd1Switch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_STREET_ADD_2":
-                    if accountStreetAdd2Switch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountStreetAdd2Text
-
-                    self._update_account_handler(
-                        key, accountStreetAdd2Switch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_CITY":
-                    if accountCitySwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountCityText
-
-                    self._update_account_handler(
-                        key, accountCitySwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_STATE":
-                    if accountStateSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountStateText
-
-                    self._update_account_handler(
-                        key, accountStateSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_ZIP":
-                    if accountZIPSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountZIPText
-
-                    self._update_account_handler(
-                        key, accountZIPSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_PO_BOX":
-                    if accountPOBoxSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountPOBoxText
-
-                    self._update_account_handler(
-                        key, accountPOBoxSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_DATE_START":
-                    if accountDateStartSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountDateStartText
-
-                    self._update_account_handler(
-                        key, accountDateStartSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_DATE_RENEWAL":
-                    if accountDateRenewalSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountDateRenewalText
-
-                    self._update_account_handler(
-                        key, accountDateRenewalSwitch, accountsJson[key], accountsJson)
-
-                case "ACCOUNT_TYPE":
-                    if accountTypeSwitch == True:
-                       accountsJson[key] = 'Null'
-
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
-                    elif accountsJson[key] == 'NULL':
-                       pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountTypeText
-
-                    self._update_account_handler(
-                        key, accountTypeSwitch, accountsJson[key], accountsJson)
-
-                case _:
-                    raise Exception("Invalid Entry Provided.")
-
-        cnxn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=True)
-        cnxn.setencoding('utf-8')
-        cursor = cnxn.cursor()  # Cursor is necessary for it to function properly
-        # This will be updated to it's respective file's needs.
-        cursor.execute("{CALL paca.updateAccounts_v1 (?)}", accountsJson)
-        cursor.close()
-        cnxn.close()
-        self.account_window.close()
-        
     def updateAccount(self, widget):
         accountsmenu = toga.Box(style=Pack(direction=COLUMN))
         widget = self.app.widgets
@@ -466,10 +236,9 @@ class UpdAccountClass:
         accountsmenu.add(accountTypeText)
         accountsmenu.add(accountTypeSwitch)
 
-        submitButton = toga.Button('Submit', style=Pack(padding=5), on_press=self._submission_handler(self, accountsJson, accountNumText, accountHonorificsText, accountFNText, accountLNText, accountSuffixText,
-                                   accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText))
+        submitButton = toga.Button('Submit', style=Pack(padding=5), on_press=UpdAccountClass._submission_handler(self,widget, accountsJson, accountNumText, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText,accountHonorificsSwitch,accountFNSwitch,accountLNSwitch,accountSuffixSwitch,accountStreetAdd1Switch,accountStreetAdd2Switch,accountCitySwitch,accountStateSwitch,accountZIPSwitch,accountPOBoxSwitch,accountDateStartSwitch,accountDateRenewalSwitch,accountTypeSwitch))
         cancelButton = toga.Button('Cancel', style=Pack(
-            padding=5), on_press=self._cancel_handler(widget))
+            padding=5), on_press=UpdAccountClass._cancel_handler(self,widget))
 
         accountsmenu.add(submitButton)
         accountsmenu.add(cancelButton)
@@ -478,10 +247,239 @@ class UpdAccountClass:
         self.account_window.content = accountsmenu
 
         return self.account_window.show()
-
     
-    
+    def _cancel_handler(self):
+        return self.account_window.close()
+        pass
 
+    def _update_account_handler(inputColumn, input, inputValue, accountsJson):
+        # input is
+        if input == True:
+            inputValue = 'NULL'
+        elif input == False:
+            logging.debug("No Change in Input Value")
+            inputValue = inputValue
+            pass
+
+        if inputColumn in accountsJson:
+            accountsJson[inputColumn] = inputValue
+
+        return accountsJson
+        pass
+        
+    def _submission_handler(self, widget,accountsJson, accountNumText,accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText,accountHonorificsSwitch,accountFNSwitch,accountLNSwitch,accountSuffixSwitch,accountStreetAdd1Switch,accountStreetAdd2Switch,accountCitySwitch,accountStateSwitch,accountZIPSwitch,accountPOBoxSwitch,accountDateStartSwitch,accountDateRenewalSwitch,accountTypeSwitch):
+        widget = self.app.widgets
+        # First we need to connect to the Database until we establish a persistent connection.
+        # global inputColumn,input,inputValue
+        #Beginning of For-Loop
+        #ata = json.loads(accountsJson)
+        for key,value in accountsJson.items():
+            #accountsJson[key]
+            match key:
+               # ACCOUNT_NUM will later be removed from processing. An update to it should fail anyhow due to key constraints.
+                # case "ACCOUNT_NUM":
+                # if accountsJson[key] is not None:
+                #    accountsJson[key] = accountNumText
+                # elif accountsJson[key] is None:
+                #   raise Exception("You must provide an Account Number to Update.")
+                # not necessary, we should never be updating the Account Num.
+                # self._update_account_handler(key,input,accountsJson[key],accountsJson)
+
+                case "ACCOUNT_HONORIFICS":
+                    if accountHonorificsSwitch == True:
+                       #accountsJson[key] = 'Null'
+                       value = 'NULL'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountHonorificsText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountHonorificsSwitch, value, accountsJson)
+
+                case "ACCOUNT_FIRST_NAME":
+                    if accountFNSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountFNText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountFNSwitch, value, accountsJson)
+
+                case "ACCOUNT_LAST_NAME":
+                    if accountLNSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountLNText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountLNSwitch, value, accountsJson)
+
+                case "ACCOUNT_SUFFIX":
+                    if accountSuffixSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountSuffixText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountSuffixSwitch, value, accountsJson)
+
+                case "ACCOUNT_STREET_ADD_1":
+                    if accountStreetAdd1Switch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountStreetAdd1Text
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountStreetAdd1Switch, value, accountsJson)
+
+                case "ACCOUNT_STREET_ADD_2":
+                    if accountStreetAdd2Switch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountStreetAdd2Text
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountStreetAdd2Switch, value, accountsJson)
+
+                case "ACCOUNT_CITY":
+                    if accountCitySwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountCityText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountCitySwitch, value, accountsJson)
+
+                case "ACCOUNT_STATE":
+                    if accountStateSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountStateText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountStateSwitch, value, accountsJson)
+
+                case "ACCOUNT_ZIP":
+                    if accountZIPSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountZIPText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountZIPSwitch, value, accountsJson)
+
+                case "ACCOUNT_PO_BOX":
+                    if accountPOBoxSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountPOBoxText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountPOBoxSwitch, value, accountsJson)
+
+                case "ACCOUNT_DATE_START":
+                    if accountDateStartSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountDateStartText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountDateStartSwitch, value, accountsJson)
+
+                case "ACCOUNT_DATE_RENEWAL":
+                    if accountDateRenewalSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountDateRenewalText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountDateRenewalSwitch, value, accountsJson)
+
+                case "ACCOUNT_TYPE":
+                    if accountTypeSwitch == True:
+                       value = 'Null'
+
+                    if value is None:
+                       value = 'NULL'
+                    elif value == 'NULL':
+                       pass
+                    elif value is not None:
+                       value = accountTypeText
+
+                    UpdAccountClass._update_account_handler(
+                        key, accountTypeSwitch, value, accountsJson)
+
+                #case _:
+                    #raise Exception("Invalid Entry Provided.")
+
+        cnxn = pyodbc.connect(
+            'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=True)
+        cnxn.setencoding('utf-8')
+        cursor = cnxn.cursor()  # Cursor is necessary for it to function properly
+        # This will be updated to it's respective file's needs.
+        cursor.execute("{CALL paca.updateAccounts_v1 (?)}", accountsJson)
+        cursor.close()
+        cnxn.close()
+        self.account_window.close()
 
 class CreAccountClass:
    def __init__(self, cnxn, data, columns):
@@ -586,9 +584,9 @@ class CreAccountClass:
       accountsmenu.add(accountTypeText)
 
       submitButton = toga.Button('Submit', style=Pack(
-          padding=5), on_press=self._update_account_callback(widget))
+          padding=5), on_press=CreAccountClass._update_account_callback(self,widget))
       cancelButton = toga.Button('Cancel', style=Pack(
-          padding=5), on_press=self._cancel_handler(widget))
+          padding=5), on_press=CreAccountClass._cancel_handler(self,widget))
       accountsmenu.add(submitButton)
       accountsmenu.add(cancelButton)
 
@@ -597,11 +595,14 @@ class CreAccountClass:
 
       return self.account_window.show()
 
-   def _submission_handler(self, accountsJson, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText):
+   def _submission_handler(self, widget, accountsJson, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText):
        # First we need to connect to the Database until we establish a persistent connection.
        # global inputColumn,input,inputValue
-
-       for key in accountsJson:
+       widget = self.app.widgets
+       
+       #data = json.loads(accountsJson)
+       
+       for key,value in accountsJson.items():
            #accountsJson[key]
            match key:
                # ACCOUNT_NUM will later be removed from processing. An update to it should fail anyhow due to key constraints.
@@ -615,196 +616,196 @@ class CreAccountClass:
 
                case "ACCOUNT_HONORIFICS":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountHonorificsText
+                    elif value is not None:
+                       value = accountHonorificsText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_FIRST_NAME":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountFNText
+                    elif value is not None:
+                       value = accountFNText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_LAST_NAME":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountLNText
+                    elif value is not None:
+                       value = accountLNText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_SUFFIX":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountSuffixText
+                    elif value is not None:
+                       value = accountSuffixText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_STREET_ADD_1":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountStreetAdd1Text
+                    elif value is not None:
+                       value = accountStreetAdd1Text
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_STREET_ADD_2":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountStreetAdd2Text
+                    elif value is not None:
+                       value = accountStreetAdd2Text
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_CITY":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountCityText
+                    elif value is not None:
+                       value = accountCityText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_STATE":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountStateText
+                    elif value is not None:
+                       value = accountStateText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_ZIP":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountZIPText
+                    elif value is not None:
+                       value = accountZIPText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_PO_BOX":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountPOBoxText
+                    elif value is not None:
+                       value = accountPOBoxText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_DATE_START":
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountDateStartText
+                    elif value is not None:
+                       value = accountDateStartText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_DATE_RENEWAL":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountDateRenewalText
+                    elif value is not None:
+                       value = accountDateRenewalText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case "ACCOUNT_TYPE":
 
-                    if accountsJson[key] is None:
-                       accountsJson[key] = 'NULL'
+                    if value is None:
+                       value = 'NULL'
                        tempKey = True
-                    elif accountsJson[key] == 'NULL':
+                    elif value == 'NULL':
                        tempKey = True
                        pass
-                    elif accountsJson[key] is not None:
-                       accountsJson[key] = accountTypeText
+                    elif value is not None:
+                       value = accountTypeText
                        tempKey = False
 
                     self._update_account_handler(
-                        key, tempKey, accountsJson[key], accountsJson)
+                        key, tempKey, value, accountsJson)
 
                case _:
                     raise Exception("Invalid Entry Provided.")
@@ -817,11 +818,12 @@ class CreAccountClass:
           logging.debug("No Change in Input Value")
           inputValue = inputValue
           pass
-
+      
+      # This needs to be a for loop with a case statement
       if inputColumn in accountsJson:
-          accountsJson[inputColumn] = inputValue
-
-      return accountsJson
+          value = inputValue
+      json_conv = json.dumps(accountsJson,ensure_ascii=False)
+      return json_conv
 
    def _cancel_handler(self,widget):
       self.account_window.close()
@@ -868,11 +870,14 @@ class DeleteAccountClass:
   
     
    
-   def _update_account_handler(inputValue, accountsJson):
-      if "ACCOUNT_NUM" in accountsJson:
-         accountsJson["ACCOUNT_NUM"] = inputValue
-    
-      return accountsJson
+   def _update_account_handler(accountsJson,inputValue):
+      
+      
+      for key, value in accountsJson.items():
+          match key:
+              case "ACCOUNT_NUM":
+                  value = inputValue
+      return accountsJson,value
 
   
    def _delete_account_callback(self,widget,initJson,accountNumText):
