@@ -15,6 +15,7 @@ import time
 import json
 import logging
 import pyodbc
+import asyncio
 
 import toga.validators
 
@@ -29,7 +30,7 @@ Batch updating can be a later feature.
 
 
 class ValidationClass():
-    def __init__(self, app, accouuntVal, substring, min_length, max_length, data_type, value):
+    def __init__(self, app, accouuntVal, substring, min_length, max_length, data_type, value,accountsJson):
         self.app = app
         self.accouuntVal = accouuntVal
         self.substring = substring
@@ -37,6 +38,7 @@ class ValidationClass():
         self.max_length = max_length
         self.data_type = data_type
         self.value = value
+        self.accountsJson = accountsJson
 
     def validate_account_length(accouuntVal, min_length=11, max_length=11):
 
@@ -81,224 +83,68 @@ class UpdAccountClass:
         self.value = value
         self.widget = toga.App.widgets
         
-    def cancel_handler(self,widget):
-        #widget = self.app.widgets
-        # account_window = toga.Window()
-        # account_window.content = None
-        # account_window.window.close()
-        print(self)
-        # for window in list(self.windows):
-        #     if not isinstance(window,toga.MainWindow):
-        #         window.close()
-
-
-    def submission_handler(self, widget, accountsJson, accountNumText, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText, accountHonorificsSwitch, accountFNSwitch, accountLNSwitch, accountSuffixSwitch, accountStreetAdd1Switch, accountStreetAdd2Switch, accountCitySwitch, accountStateSwitch, accountZIPSwitch, accountPOBoxSwitch, accountDateStartSwitch, accountDateRenewalSwitch, accountTypeSwitch):
-        widget = self.app.widgets
-        # First we need to connect to the Database until we establish a persistent connection.
-        # global inputColumn,input,inputValue
-        # Beginning of For-Loop
-        # ata = json.loads(accountsJson)
-        json_processor = {}
+    def wrap_async_function(async_func, *args, **kwargs):
+        def sync_wrapper(widget):
+            asyncio.run(async_func(*args, **kwargs))
+        return sync_wrapper
         
-        for key in accountsJson.items():
-            # accountsJson[key]
-            match key:
-               # ACCOUNT_NUM will later be removed from processing. An update to it should fail anyhow due to key constraints.
-                # case "ACCOUNT_NUM":
-                # if accountsJson[key] is not None:
-                #    accountsJson[key] = accountNumText
-                # elif accountsJson[key] is None:
-                #   raise Exception("You must provide an Account Number to Update.")
-                # not necessary, we should never be updating the Account Num.
-                # self._update_account_handler(key,input,accountsJson[key],accountsJson)
-
-                case "ACCOUNT_HONORIFICS":
-                    if accountHonorificsSwitch == True:
-                        # accountsJson[key] = 'NULL'
-                        value = 'NULL'
-
-                    if accountHonorificsText is None:
-                        value = 'NULL'
-                    elif accountHonorificsText == 'NULL':
-                        value = 'NULL'
-                    elif accountHonorificsText is not None:
-                        value = accountHonorificsText
-                    
-                    json_processor += ({"ACCOUNT_HONORIFICS":value})
-
-                case "ACCOUNT_FIRST_NAME":
-                    if accountFNSwitch == True:
-                        value = 'NULL'
-
-                    if accountFNText is None:
-                        value = 'NULL'
-                    elif accountFNText == 'NULL':
-                        value = 'NULL'
-                    elif accountFNText is not None:
-                        value = accountFNText
-
-                    json_processor += ({"ACCOUNT_FIRST_NAME":value})
-
-                case "ACCOUNT_LAST_NAME":
-                    if accountLNSwitch == True:
-                        value = 'NULL'
-
-                    if accountLNText is None:
-                        value = 'NULL'
-                    elif accountLNText == 'NULL':
-                        value = 'NULL'
-                    elif accountLNText is not None:
-                        value = accountLNText
-
-                    json_processor += ({"ACCOUNT_LAST_NAME":value})
-
-                case "ACCOUNT_SUFFIX":
-                    if accountSuffixSwitch == True:
-                        value = 'NULL'
-
-                    if accountSuffixText is None:
-                        value = 'NULL'
-                    elif accountSuffixText == 'NULL':
-                        value = 'NULL'
-                    elif accountSuffixText is not None:
-                        value = accountSuffixText
-
-                    json_processor += ({"ACCOUNT_SUFFIX":value})
-
-                case "ACCOUNT_STREET_ADD_1":
-                    if accountStreetAdd1Switch == True:
-                        value = 'NULL'
-
-                    if accountStreetAdd1Text is None:
-                        value = 'NULL'
-                    elif accountStreetAdd1Text == 'NULL':
-                        value = 'NULL'
-                    elif accountStreetAdd1Text is not None:
-                        value = accountStreetAdd1Text
-
-                    json_processor += ({"ACCOUNT_STREET_ADD_1":value})
-
-                case "ACCOUNT_STREET_ADD_2":
-                    if accountStreetAdd2Switch == True:
-                        value = 'NULL'
-
-                    if accountStreetAdd2Text is None:
-                        value = 'NULL'
-                    elif accountStreetAdd2Text == 'NULL':
-                        value = 'NULL'
-                    elif accountStreetAdd2Text is not None:
-                        value = accountStreetAdd2Text
-
-                    json_processor += ({"ACCOUNT_STREET_ADD_2":value})
-
-                case "ACCOUNT_CITY":
-                    if accountCitySwitch == True:
-                        value = 'NULL'
-
-                    if accountCityText is None:
-                        value = 'NULL'
-                    elif accountCityText == 'NULL':
-                        value = 'NULL'
-                    elif accountCityText is not None:
-                        value = accountCityText
-
-                    json_processor += ({"ACCOUNT_CITY":value})
-
-                case "ACCOUNT_STATE":
-                    if accountStateSwitch == True:
-                        value = 'NULL'
-
-                    if accountStateText is None:
-                        value = 'NULL'
-                    elif accountStateText == 'NULL':
-                        value = 'NULL'
-                    elif accountStateText is not None:
-                        value = accountStateText
-
-                    json_processor += ({"ACCOUNT_STATE":value})
-
-                case "ACCOUNT_ZIP":
-                    if accountZIPSwitch == True:
-                        value = 'NULL'
-
-                    if accountZIPText is None:
-                        value = 'NULL'
-                    elif accountZIPText == 'NULL':
-                        value = 'NULL'
-                    elif accountZIPText is not None:
-                        value = accountZIPText
-
-                    json_processor += ({"ACCOUNT_ZIP":value})
-
-                case "ACCOUNT_PO_BOX":
-                    if accountPOBoxSwitch == True:
-                        value = 'NULL'
-
-                    if accountPOBoxText is None:
-                        value = 'NULL'
-                    elif accountPOBoxText == 'NULL':
-                        value = 'NULL'
-                    elif accountPOBoxText is not None:
-                        value = accountPOBoxText
-
-                    json_processor += ({"ACCOUNT_PO_BOX":value})
-
-                case "ACCOUNT_DATE_START":
-                    if accountDateStartSwitch == True:
-                        value = 'NULL'
-
-                    if accountDateStartText is None:
-                        value = 'NULL'
-                    elif accountDateStartText == 'NULL':
-                        value = 'NULL'
-                    elif accountDateStartText is not None:
-                        value = accountDateStartText
-
-                    json_processor += ({"ACCOUNT_DATE_START":value})
-
-                case "ACCOUNT_DATE_RENEWAL":
-                    if accountDateRenewalSwitch == True:
-                        value = 'NULL'
-
-                    if accountDateRenewalText is None:
-                        value = 'NULL'
-                    elif accountDateRenewalText == 'NULL':
-                        value = 'NULL'
-                    elif accountDateRenewalText is not None:
-                        value = accountDateRenewalText
-
-                    #This will be provided via MS SQL via DATEADD(YY,1,'YYYY-MM-DD')
-                    #json_processor += ({"ACCOUNT_DATE_RENEWAL":value})
-
-                case "ACCOUNT_TYPE":
-                    if accountTypeSwitch == True:
-                        value = 'NULL'
-
-                    if accountTypeText is None:
-                        value = 'NULL'
-                    elif accountTypeText == 'NULL':
-                        value = 'NULL'
-                    elif accountTypeText is not None:
-                        value = accountTypeText
-
-                    json_processor += ({"ACCOUNT_TYPE":value})
-
-                # case _:
-                #     raise Exception("Invalid Entry Provided.")
-        tempJson = json.dumps(json_processor,indent=4)
+    def run_stored_procedure(json_processor):
+        tempJson = json.dumps(json_processor, indent=4)
+        print(tempJson)
         #update_json = json.loads(tempJson)
         cnxn = pyodbc.connect(
             'DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=PACA;UID=pacauser;PWD=pacauser;TrustServerCertificate=YES;Encrypt=YES', autocommit=True)
         cnxn.setencoding('utf-8')
         cursor = cnxn.cursor()  # Cursor is necessary for it to function properly
         # This will be updated to it's respective file's needs.
-        print(tempJson)
+        
+        #print(tempJson)
+        
         cursor.execute("{CALL paca.updateAccounts_v1 (?)}", tempJson)
         cursor.close()
         cnxn.close()
         account_window = toga.Window()
         #account_window.content = None
-        account_window.close()
+        return account_window.close()
+        
+    async def cancel_handler(self,widget):
+        #widget = self.app.widgets
+        # account_window = toga.Window()
+        # account_window.content = None
+        # account_window.window.close()
+        #print(self)
+        # for window in list(self.windows):
+        #     if not isinstance(window,toga.MainWindow):
+        #         window.close()
+        pass
+
+    async def submission_handler(self, widget, accountNumText, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText, accountHonorificsSwitch, accountFNSwitch, accountLNSwitch, accountSuffixSwitch, accountStreetAdd1Switch, accountStreetAdd2Switch, accountCitySwitch, accountStateSwitch, accountZIPSwitch, accountPOBoxSwitch, accountDateStartSwitch, accountDateRenewalSwitch, accountTypeSwitch):
+        widget = self.app.widgets
+        # First we need to connect to the Database until we establish a persistent connection.
+        # global inputColumn,input,inputValue
+        # Beginning of For-Loop
+        # ata = json.loads(accountsJson)
+        
+        json_processor = {}
+
+    # Ingest values into JSON
+        json_processor["ACCOUNT_NUM"] = accountNumText.value
+        json_processor["ACCOUNT_HONORIFICS"] = accountHonorificsText.value if not accountHonorificsSwitch.value else (accountHonorificsText.value or 'NULL')
+        json_processor["ACCOUNT_FIRST_NAME"] = accountFNText.value if not accountFNSwitch.value else (accountFNText.value or 'NULL')
+        json_processor["ACCOUNT_LAST_NAME"] = accountLNText.value if not accountLNSwitch.value else (accountLNText.value or 'NULL')
+        json_processor["ACCOUNT_SUFFIX"] = accountSuffixText.value if not accountSuffixSwitch.value else (accountSuffixText.value or 'NULL')
+        json_processor["ACCOUNT_STREET_ADD_1"] = accountStreetAdd1Text.value if not accountStreetAdd1Switch.value else (accountStreetAdd1Text.value or 'NULL')
+        json_processor["ACCOUNT_STREET_ADD_2"] = accountStreetAdd2Text.value if not accountStreetAdd2Switch.value else (accountStreetAdd2Text.value or 'NULL')
+        json_processor["ACCOUNT_CITY"] = accountCityText.value if not accountCitySwitch.value else (accountCityText.value or 'NULL')
+        json_processor["ACCOUNT_STATE"] = accountStateText.value if not accountStateSwitch.value else (accountStateText.value or 'NULL')
+        json_processor["ACCOUNT_ZIP"] = accountZIPText.value if not accountZIPSwitch.value else (accountZIPText.value or 'NULL')
+        json_processor["ACCOUNT_PO_BOX"] = accountPOBoxText.value if not accountPOBoxSwitch.value else (accountPOBoxText.value or 'NULL')
+        json_processor["ACCOUNT_DATE_START"] = accountDateStartText.value if not accountDateStartSwitch.value else (accountDateStartText.value or 'NULL')
+        json_processor["ACCOUNT_DATE_RENEWAL"] = accountDateRenewalText.value if not accountDateRenewalSwitch.value else (accountDateRenewalText.value or 'NULL')
+        json_processor["ACCOUNT_TYPE"] = accountTypeText.value if not accountTypeSwitch.value else (accountTypeText.value or 'NULL')
+        return await self.queue.put(UpdAccountClass.run_stored_procedure(json_processor))
+
+    # Convert to JSON format
 
     def updateAccount(self, widget):
         accountnumbox = toga.Box(style=Pack(direction=ROW,padding=10))
@@ -508,25 +354,24 @@ class UpdAccountClass:
         accounttypebox.add(accountTypeText)
         accounttypebox.add(accountTypeSwitch)
 
-        accountsJson = {"ACCOUNT_NUM": None,
-                        "ACCOUNT_HONORIFICS": None,
-                        "ACCOUNT_FIRST_NAME": None,
-                        "ACCOUNT_LAST_NAME": None,
-                        "ACCOUNT_SUFFIX": None,
-                        "ACCOUNT_STREET_ADD_1": None,
-                        "ACCOUNT_STREET_ADD_2": None,
-                        "ACCOUNT_CITY": None,
-                        "ACCOUNT_STATE": None,
-                        "ACCOUNT_ZIP": None,
-                        "ACCOUNT_PO_BOX": None,
-                        "ACCOUNT_DATE_START": None,
-                        "ACCOUNT_DATE_RENEWAL": None,
-                        "ACCOUNT_TYPE": None}
-        
-        submitButton = toga.Button('Submit', style=Pack(padding=5), on_press=UpdAccountClass.submission_handler(self, widget, accountsJson, accountNumText, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText,
-                                   accountDateStartText, accountDateRenewalText, accountTypeText, accountHonorificsSwitch, accountFNSwitch, accountLNSwitch, accountSuffixSwitch, accountStreetAdd1Switch, accountStreetAdd2Switch, accountCitySwitch, accountStateSwitch, accountZIPSwitch, accountPOBoxSwitch, accountDateStartSwitch, accountDateRenewalSwitch, accountTypeSwitch))
+        # accountsJson = {"ACCOUNT_NUM": None,
+        #                 "ACCOUNT_HONORIFICS": None,
+        #                 "ACCOUNT_FIRST_NAME": None,
+        #                 "ACCOUNT_LAST_NAME": None,
+        #                 "ACCOUNT_SUFFIX": None,
+        #                 "ACCOUNT_STREET_ADD_1": None,
+        #                 "ACCOUNT_STREET_ADD_2": None,
+        #                 "ACCOUNT_CITY": None,
+        #                 "ACCOUNT_STATE": None,
+        #                 "ACCOUNT_ZIP": None,
+        #                 "ACCOUNT_PO_BOX": None,
+        #                 "ACCOUNT_DATE_START": None,
+        #                 "ACCOUNT_DATE_RENEWAL": None,
+        #                 "ACCOUNT_TYPE": None}
+        loop = asyncio.get_event_loop()
+        submitButton = toga.Button('Submit', style=Pack(padding=5), on_press=UpdAccountClass.wrap_async_function(UpdAccountClass.submission_handler(self, widget, accountNumText, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText, accountHonorificsSwitch, accountFNSwitch, accountLNSwitch, accountSuffixSwitch, accountStreetAdd1Switch, accountStreetAdd2Switch, accountCitySwitch, accountStateSwitch, accountZIPSwitch, accountPOBoxSwitch, accountDateStartSwitch, accountDateRenewalSwitch, accountTypeSwitch)))
         cancelButton = toga.Button('Cancel', style=Pack(
-            padding=5), on_press=UpdAccountClass.cancel_handler(self,widget))
+            padding=5), on_press=UpdAccountClass.wrap_async_function(UpdAccountClass.cancel_handler(self,widget)))
         
         decisionsBox = toga.Box(style=Pack(direction=ROW,padding=10))
         decisionsBox.add(submitButton)
@@ -664,23 +509,9 @@ class CreAccountClass:
         # accountbox.add(accountNumSwitch)
        
 
-        accountsJson = {
-            "ACCOUNT_HONORIFICS": None,
-            "ACCOUNT_FIRST_NAME": None,
-            "ACCOUNT_LAST_NAME": None,
-            "ACCOUNT_SUFFIX": None,
-            "ACCOUNT_STREET_ADD_1": None,
-            "ACCOUNT_STREET_ADD_2": None,
-            "ACCOUNT_CITY": None,
-            "ACCOUNT_STATE": None,
-            "ACCOUNT_ZIP": None,
-            "ACCOUNT_PO_BOX": None,
-            "ACCOUNT_DATE_START": None,
-            "ACCOUNT_DATE_RENEWAL": None,
-            "ACCOUNT_TYPE": None
-        }
+        
         submitButton = toga.Button('Submit', style=Pack(
-            padding=5), on_press=CreAccountClass.submission_handler(self, accountsJson, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText))
+            padding=5), on_press=CreAccountClass.submission_handler(self,  accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText))
         cancelButton = toga.Button('Cancel', style=Pack(
             padding=5), on_press=CreAccountClass.cancel_handler(self,widget))
         
@@ -737,11 +568,25 @@ class CreAccountClass:
 
         return account_window.show()
 
-    async def submission_handler(self, accountsJson, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText):
+    def submission_handler(self, accountHonorificsText, accountFNText, accountLNText, accountSuffixText, accountStreetAdd1Text, accountStreetAdd2Text, accountCityText, accountStateText, accountZIPText, accountPOBoxText, accountDateStartText, accountDateRenewalText, accountTypeText):
         # First we need to connect to the Database until we establish a persistent connection.
         # global inputColumn,input,inputValue
         #widget = self.app.widgets
-
+        accountsJson = {
+            "ACCOUNT_HONORIFICS": None,
+            "ACCOUNT_FIRST_NAME": None,
+            "ACCOUNT_LAST_NAME": None,
+            "ACCOUNT_SUFFIX": None,
+            "ACCOUNT_STREET_ADD_1": None,
+            "ACCOUNT_STREET_ADD_2": None,
+            "ACCOUNT_CITY": None,
+            "ACCOUNT_STATE": None,
+            "ACCOUNT_ZIP": None,
+            "ACCOUNT_PO_BOX": None,
+            "ACCOUNT_DATE_START": None,
+            "ACCOUNT_DATE_RENEWAL": None,
+            "ACCOUNT_TYPE": None
+        }
         # data = json.loads(accountsJson)
         json_processor = {}
 
@@ -905,37 +750,35 @@ class CreAccountClass:
                     
             return json_processor
 
-    async def cancel_handler(self,widget):
-        for window in list(self.windows):
-            if not isinstance(window,toga.MainWindow):
-                window.close()
+    def cancel_handler(self,widget):
+        # for window in list(self.windows):
+        #     if not isinstance(window,toga.MainWindow):
+        #         window.close()
+        pass
 
 
 class DeleteAccountClass:
-    def __init__(self, cnxn, data, columns):
+    def __init__(self, cnxn, data, columns, widget):
         self.app = toga.App
         self.cnxn = cnxn
         self.data = data
         self.table = toga.Table
         self.columns = columns
         self.list_source = toga.sources.ListSource
+        self.widget = self.app.widgets
 
     def deleteAccount(self, widget):
         accountnumbox = toga.Box(style=Pack(direction=ROW,padding=10))
         widget = self.app.widgets
 
-        initJson = {}
-
         # label = toga.Label('Accounts Results',style=Pack(padding=10,font_size=14))
 
         accountNumLabel = toga.Label(
             'Account Number', style=Pack(font_size=14))
-        accountNumText = toga.TextInput(on_change=None,width=150,padding=10)
-
-        
+        accountNumText = toga.TextInput(on_change=None,style=Pack(width=150,padding=10))
 
         deleteAccountButton = toga.Button('Delete Account', style=Pack(
-            padding=5), on_press=self.delete_account_callback(self, widget, initJson, accountNumText))
+            padding=5), on_press=self.delete_account_callback(self, widget, accountNumText))
         cancelAccountButton = toga.Button('Cancel Account', style=Pack(
             padding=5), on_press=self.cancel_handler(self,widget))
         
@@ -955,9 +798,10 @@ class DeleteAccountClass:
         return account_window.show()
 
 
-    def delete_account_callback(self, widget, initJson, accountNumText):
+    def delete_account_callback(self, widget, accountNumText):
         widget = self.app.widgets
         
+        initJson = {}
         initJson += ({"ACCOUNT_NUM":accountNumText})
         
         cnxn = pyodbc.connect(
@@ -979,7 +823,9 @@ class DeleteAccountClass:
         # for window in list(self.windows):
         #     if not isinstance(window,toga.MainWindow):
         #         window.close()
-        print(self)
+        #print(self)
+        #print(widget)
+        pass
 
 
 snapshot = tracemalloc.take_snapshot()

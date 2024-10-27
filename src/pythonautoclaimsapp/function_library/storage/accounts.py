@@ -25,7 +25,7 @@ class AccountsClass:
         self.columns = columns
         self.list_source = toga.sources.ListSource
 
-    def getAccounts():
+    async def getAccounts():
         #global data
         
         try:
@@ -84,9 +84,9 @@ class AccountsClass:
             cursor.close()
             cnxn.close()
             
-        return columns,list_source
+        return await columns,list_source
     
-    def accounts_secondary_box(self,widget):
+    async def accounts_secondary_box(self,widget):
         #global columns,list_source,table
 
         columns,list_source = AccountsClass.getAccounts()
@@ -114,7 +114,7 @@ class AccountsClass:
         second_window.content = second_box
         #second_window.show()
 
-        return second_window.show()
+        return await second_window.show()
 
 def main():
     return AccountsClass()

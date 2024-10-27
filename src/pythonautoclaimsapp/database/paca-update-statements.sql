@@ -27,6 +27,9 @@
 		2024-08-16: Added new shell for updateHomes_v1. All future update stored procedures will utilize
 			this shell.
 		2024-08-18: Shell applied to updateVehicles_v1.
+		2024-10-22: Updated updateHomes_v1, updateVehicles_v1 to the correct scalar variables.
+		2024-10-22: Updated updateHomes_v1 for the remaining missed scalar variables.
+		2024-10-22: Added homes scalar variables to "Scalar Variables" section.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -79,6 +82,49 @@
 		@acctDtRe_actual: Account Current Date Renewal.
 		@acctType_actual: Account Current Type.
 		@val: This is a placeholder so that the Query runs. The Value is not utilized for anything else.
+		@homeInternalID: Internal ID assigned to each home.
+		@homePremium: Home Premuim amount.
+		@homeAddress: Home Physical Address.
+		@homeSec1DW: Home Dwelling.
+		@homeSec1DWEX: Home Dwelling Extended.
+		@homeSec1PerProp: Home Personal Property.
+		@homeSec1LOU: Home Loss of Use.
+		@homeSec1FDSC: Home Fire Dept. Service Charge.
+		@homeSec1SL: Home Service Line Coverage.
+		@homeSec1BUSD: Home Back-up of Sewer or Drain 5%.
+		@homeSec2PL: Home Personal liability (each occurrence).
+		@homeSec2DPO: Home Damage to Property of Others.
+		@homeSec2MPO: Home Medical Payments to Others (Each Person).
+		@homePremium_actual: Home Premium
+		@homeAddress_actual: Home Physical Address
+		@homeSec1DW_actual: Home Dwelling
+		@homeSec1DWEX_actual: Home Dwelling Extended
+		@homeSec1PerProp_actual: Home Personal Property.
+		@homeSec1LOU_actual: Home Loss of Use.
+		@homeSec1FDSC_actual: Home Fire Dept. Service Charge.
+		@homeSec1SL_actual: Home Service Line Coverage.
+		@homeSec1BUSD_actual: Home Back-up of Sewer or Drain 5%.
+		@homeSec2PL_actual: Home Personal liability (each occurrence).
+		@homeSec2DPO_actual: Home Damage to Property of Others.
+		@homeSec2MPO_actual: Home Medical Payments to Others (Each Person).
+		@vehicleVin: Vehicle VIN.
+		@vehicleYear: Vehicle Year.
+		@vehicleMake: Vehicle Make.
+		@vehicleModel: Vehicle Model.
+		@vehiclePremium: Vehicle Premium.
+		@vehicleAnnualMileage: Vehicle Annual Mileage.
+		@vehicleVehicleUse: Vehicle Useage.
+		@vehicleAddress1Garaged: Vehicle Physical Garaged Address Line 1.
+		@vehicleAddress2Garaged: Vehicle Physical Garaged Address Line 2.
+		@vehicleVin_actual: Vehicle VIN.
+		@vehicleYear_actual: Vehicle Year.
+		@vehicleMake_actual: Vehicle Make.
+		@vehicleModel_actual: Vehicle Model.
+		@vehiclePremium_actual: Vehicle Premium.
+		@vehicleAnnualMileage_actual: Vehicle Annual Mileage.
+		@vehicleVehicleUse_actual: Vehicle Useage.
+		@vehicleAddress1Garaged_actual: Vehicle Physical Garaged Address Line 1.
+		@vehicleAddress2Garaged_actual: Vehicle Physical Garaged Address Line 2.
 
 		
 	Citations:
@@ -635,7 +681,7 @@ IF (@homeSec1DW  <> N'NULL' AND @homeSec1DW_actual IS NOT NULL)
 	END
 
 -- Account Suffix
-IF (@homeSec1DWEX IS NOT NULL AND @homeSec1DWEX <> N'NULL' AND @acctSuf_actual IS NULL)
+IF (@homeSec1DWEX IS NOT NULL AND @homeSec1DWEX <> N'NULL' AND @homeSec1DWEX_actual IS NULL)
 	BEGIN
 		SET @updStatement += N' HOMES_SEC1_DWEX = ' + @homeSec1DWEX + N' , '
 	END
@@ -717,7 +763,7 @@ IF (@homeSec1SL <> N'NULL' AND @homeSec1SL_actual IS NOT NULL)
 
 
 -- Account ZIP
-IF (@homeSec1BUSD IS NOT NULL AND @homeSec1BUSD <> N'NULL' AND @acctZip_actual IS NULL)
+IF (@homeSec1BUSD IS NOT NULL AND @homeSec1BUSD <> N'NULL' AND @homeSec1BUSD_actual IS NULL)
 	BEGIN
 		SET @updStatement += N' HOMES_SEC1_BU_SD = ' + @homeSec1BUSD + N' , ';
 	END
@@ -749,7 +795,7 @@ IF (@homeSec2PL <> N'NULL' AND @homeSec2PL_actual IS NOT NULL)
 	END
 
 -- Account Date Start
-IF (@homeSec2DPO IS NOT NULL AND @homeSec2DPO <> N'NULL' AND @acctDtSt_actual IS NULL)
+IF (@homeSec2DPO IS NOT NULL AND @homeSec2DPO <> N'NULL' AND @homeSec2DPO_actual IS NULL)
 	BEGIN
 		SET @updStatement += N' HOMES_SEC2_DPO = ' + @homeSec2DPO + N' , '
 	END
@@ -909,23 +955,23 @@ Combinations:
 
 
 -- Vehicle VIN
-IF (@vechicleVin IS NOT NULL AND @vechicleVin <> N'NULL' AND @vechicleVin_actual IS NULL)
+IF (@vehicleVin IS NOT NULL AND @vehicleVin <> N'NULL' AND @vehicleVin_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' VEHICLE_VIN = '+ '''' + @vechicleVin + '''' + N' , '
+		SET @updStatement += N' VEHICLE_VIN = '+ '''' + @vehicleVin + '''' + N' , '
 	END
 
 /*
 We cannot have a VEHICLE_VIN as NULL. Therefore, this is not needed.
-IF (@vechicleVin = N'NULL' AND @vechicleVin_actual IS NOT NULL)
+IF (@vehicleVin = N'NULL' AND @vehicleVin_actual IS NOT NULL)
 	BEGIN
 		SET @updStatement += N' VEHICLE_VIN = NULL , '
 	END
 */
 
 
-IF (@vechicleVin  <> N'NULL' AND @vechicleVin_actual IS NOT NULL AND @vehicleVin <> @vechicleVin_actual)
+IF (@vehicleVin  <> N'NULL' AND @vehicleVin_actual IS NOT NULL AND @vehicleVin <> @vehicleVin_actual)
 	BEGIN
-		SET @updStatement += N' VEHICLE_VIN = ' + ''''  + @vechicleVin + '''' + N' , '
+		SET @updStatement += N' VEHICLE_VIN = ' + ''''  + @vehicleVin + '''' + N' , '
 	END
 
 -- Vehicle Year
@@ -977,85 +1023,85 @@ IF (@vehicleModel <> N'NULL' AND @vehicleModel_actual IS NOT NULL)
 	END
 
 -- Vehicle Premium
-IF (@homeSec1PerProp IS NOT NULL AND @homeSec1PerProp <> N'NULL' AND @homeSec1PerProp_actual IS NULL)
+IF (@vehiclePremium IS NOT NULL AND @vehiclePremium <> N'NULL' AND @vehiclePremium_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_PER_PROP = ' + @homeSec1PerProp + N' , '
+		SET @updStatement += N' VEHICLE_PREMIUM = ' + @vehiclePremium + N' , '
 	END
 
-IF (@homeSec1PerProp = N'NULL' AND @homeSec1PerProp_actual IS NOT NULL)
+IF (@vehiclePremium = N'NULL' AND @vehiclePremium_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_PER_PROP = NULL , ';
+		SET @updStatement += N' VEHICLE_PREMIUM = NULL , ';
 	END
 
-IF (@homeSec1PerProp <> N'NULL' AND @homeSec1PerProp_actual IS NOT NULL)
+IF (@vehiclePremium <> N'NULL' AND @vehiclePremium_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_PER_PROP = '  + @homeSec1PerProp + N' , ';
+		SET @updStatement += N' VEHICLE_PREMIUM = '  + @vehiclePremium + N' , ';
 	END
 
 -- Vehicle Annual Mileage
-IF (@homeSec1LOU IS NOT NULL AND @homeSec1LOU <> N'NULL' AND @homeSec1LOU_actual IS NULL)
+IF (@vehicleAnnualMileage IS NOT NULL AND @vehicleAnnualMileage <> N'NULL' AND @hvehicleAnnualMileage_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_LOU = ' + @homeSec1LOU + N' , ';
+		SET @updStatement += N' VEHICLE_ANNUAL_MILEAGE = ' + @vehicleAnnualMileage + N' , ';
 	END
 
-IF (@homeSec1LOU = N'Intentional' AND @homeSec1LOU_actual IS NOT NULL)
+IF (@vehicleAnnualMileage = N'Intentional' AND @vehicleAnnualMileage_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_LOU = NULL , ';
+		SET @updStatement += N' VEHICLE_ANNUAL_MILEAGE = NULL , ';
 	END
 
-IF (@homeSec1LOU <> N'NULL' AND @homeSec1LOU_actual IS NOT NULL)
+IF (@vehicleAnnualMileage <> N'NULL' AND @vehicleAnnualMileage_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_LOU = '  + @homeSec1LOU + N' , ';
+		SET @updStatement += N' VEHICLE_ANNUAL_MILEAGE = '  + @vehicleAnnualMileage + N' , ';
 	END
 
 -- Vehicle Vehicle Use
-IF (@homeSec1FDSC IS NOT NULL AND @homeSec1FDSC <> N'NULL' AND @homeSec1FDSC_actual IS NULL)
+IF (@vehicleVehicleUse IS NOT NULL AND @vehicleVehicleUse <> N'NULL' AND @vehicleVehicleUse_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_FD_SC = ' + @homeSec1FDSC + N' , ';
+		SET @updStatement += N' HOMES_SEC1_FD_SC = ' + @vehicleVehicleUse + N' , ';
 	END
 
-IF (@homeSec1FDSC = N'NULL' AND @homeSec1FDSC_actual IS NOT NULL)
+IF (@vehicleVehicleUse = N'NULL' AND @vehicleVehicleUse_actual IS NOT NULL)
 	BEGIN
 		SET @updStatement += N' HOMES_SEC1_FD_SC = NULL , ';
 	END
 
-IF (@homeSec1FDSC <> N'NULL' AND @homeSec1FDSC_actual IS NOT NULL)
+IF (@vehicleVehicleUse <> N'NULL' AND @vehicleVehicleUse_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_FD_SC = '  + @homeSec1FDSC + N' , ';
+		SET @updStatement += N' HOMES_SEC1_FD_SC = '  + @vehicleVehicleUse + N' , ';
 	END
 
 
 -- Vehicle Address 1 Garaged
-IF (@homeSec1SL IS NOT NULL AND @homeSec1SL <> N'NULL' AND @homeSec1SL_actual IS NULL)
+IF (@vehicleAddress1Garaged IS NOT NULL AND @vehicleAddress1Garaged <> N'NULL' AND @vehicleAddress1Garaged_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_SL = ' + @homeSec1SL + N' , ';
+		SET @updStatement += N' HOMES_SEC1_SL = ' + @vehicleAddress1Garaged + N' , ';
 	END
 
-IF (@homeSec1SL = N'NULL' AND @homeSec1SL_actual IS NOT NULL)
+IF (@vehicleAddress1Garaged = N'NULL' AND @vehicleAddress1Garaged_actual IS NOT NULL)
 	BEGIN
 		SET @updStatement += N' HOMES_SEC1_SL = NULL , ';
 	END
 
-IF (@homeSec1SL <> N'NULL' AND @homeSec1SL_actual IS NOT NULL)
+IF (@vehicleAddress1Garaged <> N'NULL' AND @vehicleAddress1Garaged_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_SL = '  + @homeSec1SL + N' , ';
+		SET @updStatement += N' HOMES_SEC1_SL = '  + @vehicleAddress1Garaged + N' , ';
 	END
 
 
 -- Vehicle Address 2 Garaged
-IF (@homeSec1BUSD IS NOT NULL AND @homeSec1BUSD <> N'NULL' AND @acctZip_actual IS NULL)
+IF (@vehicleAddress2Garaged IS NOT NULL AND @vehicleAddress2Garaged <> N'NULL' AND @vehicleAddress2Garaged_actual IS NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_BU_SD = ' + @homeSec1BUSD;
+		SET @updStatement += N' HOMES_SEC1_BU_SD = ' + @vehicleAddress2Garaged;
 	END
 
-IF (@homeSec1BUSD = N'NULL' AND @homeSec1BUSD_actual IS NOT NULL)
+IF (@vehicleAddress2Garaged = N'NULL' AND @vehicleAddress2Garaged_actual IS NOT NULL)
 	BEGIN
 		SET @updStatement += N' HOMES_SEC1_BU_SD = NULL';
 	END
 
-IF (@homeSec1BUSD  <> N'NULL' AND @homeSec1BUSD_actual IS NOT NULL)
+IF (@vehicleAddress2Garaged  <> N'NULL' AND @vehicleAddress2Garaged_actual IS NOT NULL)
 	BEGIN
-		SET @updStatement += N' HOMES_SEC1_BU_SD = '  + @homeSec1BUSD ;
+		SET @updStatement += N' HOMES_SEC1_BU_SD = '  + @vehicleAddress2Garaged ;
 	END
 
 
