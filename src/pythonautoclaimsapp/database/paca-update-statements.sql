@@ -869,7 +869,7 @@ GO
 Update our vehicle
 */
 
-CREATE PROCEDURE updateVehicle_v1
+CREATE PROCEDURE paca.updateVehicle_v1
 @json NVARCHAR(MAX)
 AS
 SET NOCOUNT ON
