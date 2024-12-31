@@ -30,6 +30,12 @@
 		2024-10-22: Updated updateHomes_v1, updateVehicles_v1 to the correct scalar variables.
 		2024-10-22: Updated updateHomes_v1 for the remaining missed scalar variables.
 		2024-10-22: Added homes scalar variables to "Scalar Variables" section.
+		2024-12-30: Fixed spelling errors of variables, correct variables, and stored procedures:
+			Stored Procedure: paca.updateVehicle_v1
+			FROM: EXECUTE paca.getHomes_v3 @homeInternalID
+			TO: EXECUTE paca.getVehicles_v2 @vehicleVin
+		2024-12-30: paca.updateHomes_v1, incorrect spelling of vehicleAnnualMileage_actual,
+			previous hvehicleAnnualMileage_actual 
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -1039,7 +1045,7 @@ IF (@vehiclePremium <> N'NULL' AND @vehiclePremium_actual IS NOT NULL)
 	END
 
 -- Vehicle Annual Mileage
-IF (@vehicleAnnualMileage IS NOT NULL AND @vehicleAnnualMileage <> N'NULL' AND @hvehicleAnnualMileage_actual IS NULL)
+IF (@vehicleAnnualMileage IS NOT NULL AND @vehicleAnnualMileage <> N'NULL' AND @vehicleAnnualMileage_actual IS NULL)
 	BEGIN
 		SET @updStatement += N' VEHICLE_ANNUAL_MILEAGE = ' + @vehicleAnnualMileage + N' , ';
 	END
@@ -1132,7 +1138,7 @@ SELECT
   ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
 
-EXECUTE paca.getHomes_v3 @homeInternalID
+EXECUTE paca.getVehicles_v2 @vehicleVin
 
 RETURN;
 

@@ -183,7 +183,7 @@ class PythonAutoClaimsApp(toga.App):
         # main_box.add(accountsLabel)
 
         accountsButton = toga.Button('Accounts', style=Pack(
-            padding=5), on_press=self.wrap_async_function(self.accounts_secondary_box)) # This needs to open a Menu
+            padding=5), on_press=self.wrap_async_function(self.accountsMenu)) # This needs to open a Menu
         vehiclesButton = toga.Button('Vehicles', style=Pack(
             padding=5), on_press=self.wrap_async_function(self.vehicles_callback)) # Current Iteration only retrieves what is current within the given table.
         homesButton = toga.Button('Homes', style=Pack(
