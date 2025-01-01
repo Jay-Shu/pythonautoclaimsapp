@@ -18,6 +18,8 @@
         2024-08-18: Overhaul of addHome_v1, addVehicle_v1, and addVehicleClaim_v1.
         2024-08-19: Added addPolicy_v1, and addVehicleCoverage_v1.
         2024-10-06: HOME_ADDRESS adding strict keyword.
+        2024-12-31: Updated correct table definitions and schemas to addPolicy_v1, addVehicleCoverage_v1.
+        2024-12-31: Correctly added scalar variable @vehicleAcctNum. Along with missing column VEHICLE_ACCOUNT_NUM.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -231,6 +233,7 @@ AS
 SET NOCOUNT ON
 
 DECLARE @tempTable TABLE (
+  VEHICLE_ACCOUNT_NUM NVARCHAR(11),
 	VEHICLE_VIN 	NVARCHAR(32) NULL,
 	VEHICLE_YEAR 	INT NULL,
 	VEHICLE_MAKE		NVARCHAR(32) NULL,
@@ -243,6 +246,7 @@ DECLARE @tempTable TABLE (
 
 INSERT INTO @tempTable
 SELECT
+  VEHICLE_ACCOUNT_NUM,
 	VEHICLE_VIN,
 	VEHICLE_YEAR,
 	VEHICLE_MAKE,
@@ -253,6 +257,7 @@ SELECT
 	VEHICLE_ADDRESS1_GARAGED,
 	VEHICLE_ADDRESS2_GARAGED
 FROM OPENJSON(@json) WITH (
+    VEHICLE_ACCOUNT_NUM NVARCHAR(11) 'strict $.VEHICLE_ACCOUNT_NUM',
     VEHICLE_VIN NVARCHAR(32) 'strict $.VEHICLE_VIN',
     VEHICLE_YEAR 	INT '$.VEHICLE_YEAR',
 	  VEHICLE_MAKE 	NVARCHAR(32) '$.VEHICLE_MAKE',
@@ -266,6 +271,7 @@ FROM OPENJSON(@json) WITH (
 ;
 
 DECLARE
+@vehicleAcctNum NVARCHAR(11) = (SELECT TOP 1 VEHICLE_ACCOUNT_NUM FROM @tempTable),
 @vehicleVin NVARCHAR(32) = (SELECT TOP 1 VEHICLE_VIN FROM @tempTable),
 @vehicleYear INT = (SELECT TOP 1 VEHICLE_YEAR FROM @tempTable),
 @vehicleMake NVARCHAR(32) = (SELECT TOP 1 VEHICLE_MAKE FROM @tempTable),
@@ -278,7 +284,7 @@ DECLARE
 
 BEGIN TRY
 BEGIN TRANSACTION
-  INSERT INTO VEHICLES VALUES (@vehicleAcctNum,
+  INSERT INTO paca.VEHICLES VALUES (@vehicleAcctNum,
 @vehicleVin,
 @vehicleYear,
 @vehicleMake,
@@ -468,7 +474,7 @@ DECLARE
 @homeSec2MPO DECIMAL(12,2) = (SELECT TOP 1 HOMES_SEC2_MPO FROM @tempTable WHERE HOMES_ACCOUNT_NUM = @homeAccountNum)
 BEGIN TRY
 BEGIN TRANSACTION
-INSERT INTO HOMES VALUES (
+INSERT INTO paca.HOMES VALUES (
 @homeAccountNum,
 @homeAccountPremium,
 @homeAddress,
@@ -529,7 +535,7 @@ DECLARE
 
 BEGIN TRY
 BEGIN TRANSACTION
-INSERT INTO HOMES VALUES (
+INSERT INTO paca.POLICIES VALUES (
 @policyName,
 @policyType,
 @policyDesc
@@ -612,7 +618,7 @@ DECLARE
 
 BEGIN TRY
 BEGIN TRANSACTION
-INSERT INTO HOMES VALUES (
+INSERT INTO paca.VEHICLE_COVERAGES VALUES (
 @vehicleCoverageAccountNum,
 @vehicleCoverageVehicle,
 @vehicleCoverageLiability,
