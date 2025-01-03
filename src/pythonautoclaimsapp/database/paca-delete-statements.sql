@@ -13,6 +13,7 @@
         2024-08-19: Added SET NOCOUNT ON to all Stored Procedures per Best Practices.
         2024-08-19: Completed overhaul of Stored Procedures.
         2024-10-04: Added Schema to Stored Procedures. Without a Schema they will default to dbo and we need it in paca.
+        2025-01-02: POLICY_ID_ACTUAL to POLICIES_ID_ACTUAL which is the correct column name for removePolicy_v1.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -213,7 +214,7 @@ DECLARE @policyIdActual NVARCHAR(11) = (SELECT TOP 1 POLICY_ID_ACTUAL FROM @temp
 BEGIN TRY
 BEGIN TRANSACTION
 DELETE FROM paca.POLICIES
-WHERE POLICY_ID_ACTUAL = @policyIdActual
+WHERE POLICIES_ID_ACTUAL = @policyIdActual
 COMMIT TRANSACTION
 END TRY
 BEGIN CATCH
