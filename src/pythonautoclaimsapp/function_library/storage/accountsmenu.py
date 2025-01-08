@@ -1,5 +1,5 @@
-from pythonautoclaimsapp.function_library.accountsactions import UpdAccountClass,CreAccountClass,DeleteAccountClass
-from pythonautoclaimsapp.function_library.accounts import AccountsClass
+#from pythonautoclaimsapp.function_library.accountsactions import UpdAccountClass,CreAccountClass,DeleteAccountClass
+from pythonautoclaimsapp.function_library.storage.accounts import AccountsClass
 from toga.style.pack import COLUMN, ROW, CENTER
 from toga.style import Pack
 import toga.sources
@@ -33,19 +33,22 @@ class AccountsMenuClass:
         # Stage for Menu
         # Needs the correct pieces
         widget = self.app.widgets
-        return UpdAccountClass.updateAccount(self, widget)
+        #return UpdAccountClass.updateAccount(self, widget)
+        pass
 
     def _create_account_callback(self):
         # Stage for Menu
         # Needs the correct pieces
         widget = self.app.widgets
-        return CreAccountClass.createAccount(self, widget)
+        pass
+        #return CreAccountClass.createAccount(self, widget)
 
     def _delete_account_callback(self):
         # Stage for Menu
         # Needs the correct pieces
         widget = self.app.widgets
-        return DeleteAccountClass.deleteAccount(self, widget)
+        pass
+        #return DeleteAccountClass.deleteAccount(self, widget)
 
     def accountsMenu(self, widget):
         accountsmenu = toga.Box(style=Pack(direction=COLUMN))
