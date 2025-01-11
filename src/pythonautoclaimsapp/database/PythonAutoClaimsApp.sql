@@ -52,6 +52,8 @@
 		2024-09-03: Added Reserved Memory Calculator, using my local machine as the Test Case. Initial Calculation does not
 			account for other applications running on this machine similar to that of a Production Server.
 		2024-09-03: Updated the Column Names of the Current Memory Allocations Query. Cosmetic Change.
+		2025-01-10: Added CLUSTERED keyword to indexes. Creates a logical order of the key values determines the physcial
+			order of the corresponding rows in a table. Refer to Author Notes for a more in-depth look.
 		
 
     TO DO (Requested):
@@ -158,6 +160,17 @@
     		DISTINCT
     		ORDER BY
     		TOP
+
+		CLUSTERED indexes
+			Creates an index in which the logical order of the key values determines the physical order of the corresponding rows in a table. The bottom, or leaf, level of the clustered index contains the actual data rows of the table. A table or view is allowed one clustered index at a time.
+
+			A view with a unique clustered index is called an indexed view. Creating a unique clustered index on a view physically materializes the view. A unique clustered index must be created on a view before any other indexes can be defined on the same view. For more information, see Create Indexed Views.
+
+			Create the clustered index before creating any nonclustered indexes. Existing nonclustered indexes on tables are rebuilt when a clustered index is created.
+
+			If CLUSTERED isn't specified, a nonclustered index is created.
+
+			Because the leaf level of a clustered index and the data pages are the same by definition, creating a clustered index and using the ON partition_scheme_name or ON filegroup_name clause effectively moves a table from the filegroup on which the table was created to the new partition scheme or filegroup. Before creating tables or indexes on specific filegroups, verify which filegroups are available and that they have enough empty space for the index.
 
 		NTFS allocation unit size
 			Volume alignment, commonly referred to as sector alignment, should be performed
@@ -456,7 +469,7 @@ GO
 **/
 EXECUTE AS LOGIN = N'pacauser'
 BEGIN TRY
-CREATE INDEX account_idx ON paca.ACCOUNTS(ACCOUNT_NUM ASC,ACCOUNT_FIRST_NAME)
+CREATE CLUSTERED INDEX account_idx ON paca.ACCOUNTS(ACCOUNT_NUM ASC,ACCOUNT_FIRST_NAME)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
 END TRY
@@ -482,7 +495,7 @@ END CATCH;
 GO
 
 BEGIN TRY
-CREATE INDEX account_idx2 ON paca.ACCOUNTS(ACCOUNT_NUM DESC,
+CREATE CLUSTERED INDEX account_idx2 ON paca.ACCOUNTS(ACCOUNT_NUM DESC,
 	ACCOUNT_FIRST_NAME ASC,ACCOUNT_LAST_NAME ASC,ACCOUNT_CITY)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
@@ -509,7 +522,7 @@ END CATCH;
 GO
 
 BEGIN TRY
-CREATE INDEX account_idx3 ON paca.ACCOUNTS(ACCOUNT_CITY,ACCOUNT_STATE,
+CREATE CLUSTERED INDEX account_idx3 ON paca.ACCOUNTS(ACCOUNT_CITY,ACCOUNT_STATE,
 	ACCOUNT_FIRST_NAME ASC,ACCOUNT_LAST_NAME ASC)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
@@ -645,7 +658,7 @@ END CATCH;
 GO
 
 BEGIN TRY
-CREATE INDEX homes_idx ON paca.HOMES(HOMES_ACCOUNT_NUM ASC,HOMES_ADDRESS)
+CREATE CLUSTERED INDEX homes_idx ON paca.HOMES(HOMES_ACCOUNT_NUM ASC,HOMES_ADDRESS)
 	WITH (ALLOW_ROW_LOCKS = ON)
 	ON [Paca_FG1]
 END TRY
