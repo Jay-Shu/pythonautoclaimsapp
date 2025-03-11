@@ -1,10 +1,9 @@
 """
 Python Auto Claims app - Simple. Intended for interactions with an MS SQL DB.
-
-In it's current state the Python side has not yet been started. Therefaore, in it's base form.
+PySide6 version of the original Toga implementation.
 
 Name of Script: app.py
-Author: Jacob Shuster
+Author: Original by Jacob Shuster
 Role: Consultant - 1099
 Umbrella Company: N/A
 Creation Date: 2024-08-11
@@ -17,103 +16,119 @@ Changelog:
     2024-08-21: Updated references for the connecttomssqlserver. Still pending resolution of
         resolving.
     2024-08-27: Troubleshooting with tracemalloc.
+    2025-03-02: Converted from Toga to PySide6
 
 Functions
 
-https://stackoverflow.com/questions/66084762/call-function-from-another-file-without-import-clause
-https://toga.readthedocs.io/en/stable/reference/api/window.html
-
 Author Notes:
-    Our connection to MS SQL Server.
+    Replacement for Toga was necessary due to multiple instances being produced.
 """
 
-# from pythonautoclaimsapp.function_library.accountsmenu import AccountsMenuClass
-# from pythonautoclaimsapp.function_library.vehicleclaims import VehicleClaimsClass
-# from pythonautoclaimsapp.function_library.vehiclecoverages import VehicleCoveragesClass
-# from pythonautoclaimsapp.function_library.policies import PoliciesClass
-# from pythonautoclaimsapp.function_library.homes import HomesClass
-# from pythonautoclaimsapp.function_library.vehicles import VehiclesClass
-# from pythonautoclaimsapp.function_library.accounts import AccountsClass
-# from pythonautoclaimsapp.function_library.accountsactions import *
-#import asyncio
+import sys
 import json
-import pyodbc
-from toga.sources import ListSource
-from toga.style.pack import COLUMN, ROW, CENTER, LEFT, RIGHT, Pack
-import toga.sources
 import tracemalloc
-import toga
 import time
 import logging
-from pythonautoclaimsapp.function_library.storage.accounts import AccountsClass
-from pythonautoclaimsapp.function_library.storage.accountsmenu import AccountsMenuClass
-# import asyncio
+from PySide6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, 
+                              QPushButton, QWidget, QLabel)
+from PySide6.QtCore import Qt
+
+# These imports would be uncommented when the modules are created:
+# from pythonautoclaimsapp.function_library.storage.accounts import AccountsClass
+# from pythonautoclaimsapp.function_library.storage.accountsmenu import AccountsMenuClass
+# Configure logging
 logger = logging.getLogger(__name__)
-
-
+logging.basicConfig(
+    filename='E:\\scripts\\python\\togatesting\\pyside6testing.log',
+    level=logging.DEBUG,
+    format='%(filename)s %(lineno)d %(asctime)s %(message)s %(module)s %(msecs)d'
+)
+logging.info('Started')
+# Start memory tracking
 tracemalloc.start()
 
+class AccountsMenuClass:
+    @staticmethod
+    def accountsMenu(parent=None, widget=None):
+        def handler():
+            # This is a placeholder for the actual menu handling function
+            # Will need to be implemented based on the original functionality
+            print("Accounts menu clicked")
+            
+        return handler
 
-class PythonAutoClaimsApp(toga.App):
-    def startup(self):
-        logging.basicConfig(
-            filename='E:\\scripts\\python\\togatesting\\togatesting.log',
-            level=logging.DEBUG,
-            format='%(filename)s %(lineno)d %(asctime)s %(message)s %(module)s %(msecs)d'
-        )
-        self.app = toga.App
-        widget = self.app.widgets
-        # self.widget = toga.App.widget
-        # logging.INFO(self.app)
-        """Construct and show the Toga application.
-       
-        https://docs.python.org/3.12/library/logging.html#logrecord-attributes
-
-        Usually, you would add your application to a main content box.
-        We then create a main window (with a name matching the app), and
-        show the main window.
-        """
-        # PythonSources._create_listeners(self)
-        main_box = toga.Box(style=Pack(direction=COLUMN))
-
-        # accountsLabel = toga.Label('Main Section')
-        # main_box.add(accountsLabel)
-
-        accountsButton = toga.Button('Accounts', style=Pack(
-            padding=5), on_press=AccountsMenuClass.accountsMenu(self,widget))  # This needs to open a Menu
-        # accountsButton = toga.Button('Accounts', style=Pack(
-        #    padding=5), on_press=self.wrap_async_function(self.accountsMenu(self,widget))) # This needs to open a Menu
-
-        vehiclesButton = toga.Button('Vehicles', style=Pack(
-            padding=5), on_press=AccountsMenuClass.accountsMenu(self,widget))  # Current Iteration only retrieves what is current within the given table.
-        homesButton = toga.Button('Homes', style=Pack(
-            padding=5), on_press=AccountsMenuClass.accountsMenu(self,widget))
-        policiesButton = toga.Button('Policies', style=Pack(
-            padding=5), on_press=AccountsMenuClass.accountsMenu(self,widget))
-        vehicleCoveragesButton = toga.Button('Vehicle Coverages', style=Pack(
-            padding=5), on_press=AccountsMenuClass.accountsMenu(self,widget))
-        vehicleClaimsButton = toga.Button('Vehicle Claims', style=Pack(
-            padding=5), on_press=AccountsMenuClass.accountsMenu(self,widget))
-
-        main_box.add(accountsButton)
-        #main_box.add(vehiclesButton)
-        #main_box.add(homesButton)
-        #main_box.add(policiesButton)
-        #main_box.add(vehicleCoveragesButton)
-        #main_box.add(vehicleClaimsButton)
+class PythonAutoClaimsApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Python Auto Claims App")
+        self.setup_ui()
         
-        #self.change()
-        self.main_window = toga.MainWindow(title=self.formal_name)
-        self.main_window.content = main_box
-        self.main_window.show()
+    def setup_ui(self):
+        """
+        Set up the main UI for the application.
+        
+        This creates a vertical layout with buttons for different sections of the app.
+        """
+        # Create central widget and layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        
+        main_layout = QVBoxLayout(central_widget)
+        
+        # Create buttons with the same functionality as in the Toga version
+        accounts_button = QPushButton("Accounts")
+        vehicles_button = QPushButton("Vehicles")
+        homes_button = QPushButton("Homes")
+        policies_button = QPushButton("Policies")
+        vehicle_coverages_button = QPushButton("Vehicle Coverages")
+        vehicle_claims_button = QPushButton("Vehicle Claims")
+        
+        # Connect buttons to the accounts menu handler temporarily
+        # This will need to be replaced with the actual handlers for each button
+        accounts_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        vehicles_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        homes_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        policies_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        vehicle_coverages_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        vehicle_claims_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        
+        # Add buttons to the layout
+        main_layout.addWidget(accounts_button)
+        main_layout.addWidget(vehicles_button)
+        main_layout.addWidget(homes_button)
+        main_layout.addWidget(policies_button)
+        main_layout.addWidget(vehicle_coverages_button)
+        main_layout.addWidget(vehicle_claims_button)
+        
+        # Set some reasonable defaults for the window size
+        self.resize(400, 300)
+        
+    def show_window(self):
+        """Show the main window."""
+        self.show()
 
 
 def main():
-    return PythonAutoClaimsApp()
+    """
+    Main entry point for the application.
+    Creates and shows the application window.
+    """
+    app = QApplication(sys.argv)
+    window = PythonAutoClaimsApp()
+    window.show_window()
     
-snapshot = tracemalloc.take_snapshot()
-top_stats = snapshot.statistics('lineno')
+    # Take a memory snapshot before entering the main loop
+    snapshot = tracemalloc.take_snapshot()
+    top_stats = snapshot.statistics('lineno')
 
-print("[ Top 10 ]")
-for stat in top_stats[:10]:
-    print(stat)
+    print("[ Top 10 ]")
+    for stat in top_stats[:10]:
+        print(stat)
+    
+    # Start the application main loop
+    sys.exit(app.exec())
+    logging.info('Finished')
+
+
+if __name__ == "__main__":
+    main()

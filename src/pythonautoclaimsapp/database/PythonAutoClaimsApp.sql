@@ -54,6 +54,9 @@
 		2024-09-03: Updated the Column Names of the Current Memory Allocations Query. Cosmetic Change.
 		2025-01-10: Added CLUSTERED keyword to indexes. Creates a logical order of the key values determines the physcial
 			order of the corresponding rows in a table. Refer to Author Notes for a more in-depth look.
+		2025-03-11: Added Clustered Indexes; account_idx4, account_idx5, vehicle_idx1, vehicle_idx2.
+		2025-03-11: Removed comment sections in TRY...CATCH blocks that was no longer relevant. Prior mention of levels to
+			adjust for logging. This logging when tested caused issues, and thus resulted in their removal.
 		
 
     TO DO (Requested):
@@ -63,6 +66,7 @@
 		Policies Enumerations. - DONE
 		Bundle Enumeration for Car and Home. For non-goal. - DONE
 		Research GPG Keys, and possible inclusion with application.
+		Overhaul Python, briefcase and toga are not playing well anymore.
 		
     DISCLAIMER:
         After receipt, this Script is "as-is". Additional modifications past the base are at 100.00 per hour.
@@ -139,6 +143,7 @@
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
+		
 		GO Keyword does not require a semi-colon. As it would be redundant.
 		BEGIN...END Blocks have been phased out completely for TRY...CATCH and GO.
 		DBCC CHECKIDENT(N'schema.table_name') and use DBCC CHECKIDENT(N'schema.table_name',RESEED)
@@ -171,6 +176,8 @@
 			If CLUSTERED isn't specified, a nonclustered index is created.
 
 			Because the leaf level of a clustered index and the data pages are the same by definition, creating a clustered index and using the ON partition_scheme_name or ON filegroup_name clause effectively moves a table from the filegroup on which the table was created to the new partition scheme or filegroup. Before creating tables or indexes on specific filegroups, verify which filegroups are available and that they have enough empty space for the index.
+
+			These will be more prevelant as the application evolves and overall necessary for a well-balanced app.
 
 		NTFS allocation unit size
 			Volume alignment, commonly referred to as sector alignment, should be performed
@@ -459,7 +466,7 @@ GO
 		A Clustered Index is used to define the order or to
 			sort the table or arrange the data by alphabetical
 			order just like a dictionary.
-		It is fater than a non-clustered index.
+		It is faster than a non-clustered index.
 		It demands less memory to execute the operation.
 		It permits you to save data sheets in the leaf nodes
 			of the Index.
@@ -474,16 +481,6 @@ CREATE CLUSTERED INDEX account_idx ON paca.ACCOUNTS(ACCOUNT_NUM ASC,ACCOUNT_FIRS
 	ON [Paca_FG1]
 END TRY
 BEGIN CATCH
-
-/*
-
-	Severity Levels 0-18 any user can specify.
-	Severity Levels 19-25 can only be specified
-		by members of the sysadmin fixed server
-		role or users with ALTER TRACE permissions.
-
-*/
-
 SELECT 
   ERROR_NUMBER() AS ErrorNumber
   ,ERROR_SEVERITY() AS ErrorSeverity
@@ -494,6 +491,7 @@ SELECT
 END CATCH;
 GO
 
+EXECUTE AS LOGIN = N'pacauser'
 BEGIN TRY
 CREATE CLUSTERED INDEX account_idx2 ON paca.ACCOUNTS(ACCOUNT_NUM DESC,
 	ACCOUNT_FIRST_NAME ASC,ACCOUNT_LAST_NAME ASC,ACCOUNT_CITY)
@@ -501,16 +499,6 @@ CREATE CLUSTERED INDEX account_idx2 ON paca.ACCOUNTS(ACCOUNT_NUM DESC,
 	ON [Paca_FG1]
 END TRY
 BEGIN CATCH
-
-/*
-
-	Severity Levels 0-18 any user can specify.
-	Severity Levels 19-25 can only be specified
-		by members of the sysadmin fixed server
-		role or users with ALTER TRACE permissions.
-
-*/
-
 SELECT 
   ERROR_NUMBER() AS ErrorNumber
   ,ERROR_SEVERITY() AS ErrorSeverity
@@ -521,6 +509,7 @@ SELECT
 END CATCH;
 GO
 
+EXECUTE AS LOGIN = N'pacauser'
 BEGIN TRY
 CREATE CLUSTERED INDEX account_idx3 ON paca.ACCOUNTS(ACCOUNT_CITY,ACCOUNT_STATE,
 	ACCOUNT_FIRST_NAME ASC,ACCOUNT_LAST_NAME ASC)
@@ -528,15 +517,6 @@ CREATE CLUSTERED INDEX account_idx3 ON paca.ACCOUNTS(ACCOUNT_CITY,ACCOUNT_STATE,
 	ON [Paca_FG1]
 END TRY
 BEGIN CATCH
-
-/*
-
-	Severity Levels 0-18 any user can specify.
-	Severity Levels 19-25 can only be specified
-		by members of the sysadmin fixed server
-		role or users with ALTER TRACE permissions.
-
-*/
 SELECT 
   ERROR_NUMBER() AS ErrorNumber
   ,ERROR_SEVERITY() AS ErrorSeverity
@@ -545,7 +525,45 @@ SELECT
   ,ERROR_LINE() AS ErrorLine
   ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
+GO
 
+EXECUTE AS LOGIN = N'pacauser'
+BEGIN TRY
+CREATE CLUSTERED INDEX account_idx4 ON paca.ACCOUNTS(ACCOUNT_CITY,ACCOUNT_STATE, ACCOUNT_ZIP,
+	ACCOUNT_FIRST_NAME ASC,ACCOUNT_LAST_NAME ASC)
+	WITH (ALLOW_ROW_LOCKS = ON)
+	ON [Paca_FG1]
+END TRY
+BEGIN CATCH
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH;
+GO
+
+EXECUTE AS LOGIN = N'pacauser'
+BEGIN TRY
+CREATE CLUSTERED INDEX account_idx5 ON paca.ACCOUNTS(ACCOUNT_HONORIFICS,
+	ACCOUNT_FIRST_NAME ASC,
+	ACCOUNT_LAST_NAME ASC,
+	ACCOUNT_SUFFIX )
+	WITH (ALLOW_ROW_LOCKS = ON)
+	ON [Paca_FG1]
+END TRY
+BEGIN CATCH
+
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH;
 GO
 
 
@@ -584,15 +602,6 @@ CREATE TABLE paca.VEHICLES
 END TRY
 BEGIN CATCH
 
-/*
-
-	Severity Levels 0-18 any user can specify.
-	Severity Levels 19-25 can only be specified
-		by members of the sysadmin fixed server
-		role or users with ALTER TRACE permissions.
-
-*/
-
 SELECT 
   ERROR_NUMBER() AS ErrorNumber
   ,ERROR_SEVERITY() AS ErrorSeverity
@@ -602,6 +611,47 @@ SELECT
   ,ERROR_MESSAGE() AS ErrorMessage;
 END CATCH;
 
+GO
+
+EXECUTE AS LOGIN = N'pacauser'
+BEGIN TRY
+CREATE CLUSTERED INDEX vehiicle_idx1 ON paca.VEHICLES(VEHICLE_VIN,
+	VEHICLE_YEAR ASC,
+	VEHICLE_MAKE ASC,
+	VEHICLE_MODEL )
+	WITH (ALLOW_ROW_LOCKS = ON)
+	ON [Paca_FG1]
+END TRY
+BEGIN CATCH
+
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH;
+GO
+
+
+EXECUTE AS LOGIN = N'pacauser'
+BEGIN TRY
+CREATE CLUSTERED INDEX vehiicle_idx2 ON paca.VEHICLES(VEHICLE_VIN,
+	VEHICLE_ADDRESS1_GARAGED,VEHICLE_ADDRESS2_GARAGED )
+	WITH (ALLOW_ROW_LOCKS = ON)
+	ON [Paca_FG1]
+END TRY
+BEGIN CATCH
+
+SELECT 
+  ERROR_NUMBER() AS ErrorNumber
+  ,ERROR_SEVERITY() AS ErrorSeverity
+  ,ERROR_STATE() AS ErrorState
+  ,ERROR_PROCEDURE() AS ErrorProcedure
+  ,ERROR_LINE() AS ErrorLine
+  ,ERROR_MESSAGE() AS ErrorMessage;
+END CATCH;
 GO
 
 /**
