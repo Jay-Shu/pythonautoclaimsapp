@@ -20,6 +20,7 @@
         2024-10-06: HOME_ADDRESS adding strict keyword.
         2024-12-31: Updated correct table definitions and schemas to addPolicy_v1, addVehicleCoverage_v1.
         2024-12-31: Correctly added scalar variable @vehicleAcctNum. Along with missing column VEHICLE_ACCOUNT_NUM.
+        2025-03-18: Added in GRANT EXECUTE of stored procedure for paca_report_user.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -644,5 +645,14 @@ ROLLBACK TRANSACTION
 END CATCH
 
 RETURN;
+
+GO
+
+GRANT EXECUTE ON OBJECT::paca.addAccount_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.addVehicle_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.addVehicleClaim_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.addHome_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.addPolicy_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.addVehicleCoverage_v1 TO paca_sp
 
 GO

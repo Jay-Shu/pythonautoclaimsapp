@@ -35,7 +35,8 @@
 			FROM: EXECUTE paca.getHomes_v3 @homeInternalID
 			TO: EXECUTE paca.getVehicles_v2 @vehicleVin
 		2024-12-30: paca.updateHomes_v1, incorrect spelling of vehicleAnnualMileage_actual,
-			previous hvehicleAnnualMileage_actual 
+			previous hvehicleAnnualMileage_actual.
+		2025-03-18: Added GRANT EXECUTE for stored procedures to paca_report_user.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -1141,5 +1142,11 @@ END CATCH
 EXECUTE paca.getVehicles_v2 @vehicleVin
 
 RETURN;
+
+GO
+
+GRANT EXECUTE ON OBJECT::paca.updateAccounts_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.updateHomes_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.updateVehicle_v1 TO paca_sp
 
 GO

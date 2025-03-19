@@ -57,7 +57,33 @@
 		2025-03-11: Added Clustered Indexes; account_idx4, account_idx5, vehicle_idx1, vehicle_idx2.
 		2025-03-11: Removed comment sections in TRY...CATCH blocks that was no longer relevant. Prior mention of levels to
 			adjust for logging. This logging when tested caused issues, and thus resulted in their removal.
+		2025-03-18: Added paca_report_user account, schema grants, and db_role.
+		2025-03-18: Added role paca_sp for Stored Procedures access giving authorization to paca_report_user.
 		
+
+	S - SITUATION
+		Briefcase and Toga are creating multiple instances upon testing. This previously did not occur
+	Months prior. There is no fix for it at this time. Most cases found resulted in closure with no
+	further investigation.
+
+	T - TASK
+		Overhaul the python framework and utilize Pyside6. Ensure that the User Interface at minimum can
+	retrieve all the objects.
+
+	A - ACTION
+		MUST-HAVE:
+			Retrieve and view results from each table
+			Execute Stored Procedures
+			Data is in the form of JSON for Stored Procedures.
+		
+		NICE-TO-HAVE:
+			Login to the Application.
+		
+		Future:
+			API Server for future iterations.
+	
+	R - RESULT
+
 
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -67,6 +93,8 @@
 		Bundle Enumeration for Car and Home. For non-goal. - DONE
 		Research GPG Keys, and possible inclusion with application.
 		Overhaul Python, briefcase and toga are not playing well anymore.
+		Indexes for remaining tables - TODO.
+		Research Principle of least privilege. - TODO.
 		
     DISCLAIMER:
         After receipt, this Script is "as-is". Additional modifications past the base are at 100.00 per hour.
@@ -140,6 +168,8 @@
 		41. DBCC CHECKTABLE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checktable-transact-sql?view=sql-server-ver16
 		42. DBCC CHECKALLOC (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checkalloc-transact-sql?view=sql-server-ver16
 		43. DBCC CHECKCONSTRAINTS (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-checkconstraints-transact-sql?view=sql-server-ver16
+		44. GRANT SCHEMA (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/grant-schema-permissions-transact-sql?view=sql-server-ver16
+		45. CREATE ROLE (Transact-SQL), https://learn.microsoft.com/en-us/sql/t-sql/statements/create-role-transact-sql?view=sql-server-ver16
 
 	Author Notes:
 		Inspired by my time at Hyland working with Phil Mosher and Brandon Rossin.
@@ -342,6 +372,14 @@ CREATE LOGIN pacauser WITH PASSWORD = N'pacauser',
 	CHECK_POLICY = OFF; --Disabled to not use the Windows Domain Level Password Requirements.
 GO
 
+CREATE LOGIN paca_report_user WITH PASSWORD = N'pacareportuser',
+	DEFAULT_DATABASE = PACA, --This user's Default MUST be PACA.
+	--DEFAULT_SCHEMA = paca, Invalid Keyword for CREATE LOGIN.
+	CHECK_EXPIRATION = OFF, --Disabled to never expire
+	CHECK_POLICY = OFF; --Disabled to not use the Windows Domain Level Password Requirements.
+GO
+
+
 /**
 
 	Create the principal account for the pacauser
@@ -351,6 +389,50 @@ GO
 CREATE USER pacauser FOR LOGIN pacauser;
 GO
 
+CREATE USER paca_report_user FOR LOGIN paca_report_user;
+GO
+
+CREATE ROLE paca_sp AUTHORIZATION paca_report_user
+/*
+	This is where we need to setup our query to add for all the stored
+	procedures in the application.
+	GRANT EXECUTE ON OBJECT::paca.getAccounts_v2 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getAccounts_v3 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getAccounts_v4 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getAccounts_v5 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getHomes_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getHomes_v2 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getHomes_v3 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicles_v3 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicles_v2 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getAccounts_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicles_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getPolicies_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v2 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v3 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v4 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.getVehicleCoverages_v1 TO paca_sp
+
+	GRANT EXECUTE ON OBJECT::paca.removeAccount_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.removeHome_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.removeVehicle_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.removePolicy_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.removeVehicleCoverages_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.removeVehicleClaims_v1 TO paca_sp
+
+	GRANT EXECUTE ON OBJECT::paca.updateAccounts_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.updateHomes_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.updateVehicle_v1 TO paca_sp
+
+	GRANT EXECUTE ON OBJECT::paca.addAccount_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.addVehicle_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.addVehicleClaim_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.addHome_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.addPolicy_v1 TO paca_sp
+	GRANT EXECUTE ON OBJECT::paca.addVehicleCoverage_v1 TO paca_sp
+*/
+GO
 /**
 
 	Creating our Schemas.
@@ -363,8 +445,16 @@ CREATE SCHEMA paca AUTHORIZATION pacauser;
 --GRANT SELECT ON SCHEMA::paca TO contentcomposer;
 GO
 
+GRANT SCHEMA paca TO paca_report_user WITH GRANT OPTION;
+
+GO
+
 ALTER USER pacauser WITH DEFAULT_SCHEMA = paca;
 GRANT VIEW DEFINITION TO pacauser;
+GO
+
+ALTER USER paca_report_user WITH DEFAULT_SCHEMA = paca;
+GRANT VIEW DEFINITION TO paca_report_user;
 GO
 
 --We have to be in the master database to be able to grant view server state to a user.
@@ -388,6 +478,9 @@ ALTER ROLE db_owner ADD MEMBER pacauser
 ALTER ROLE db_securityadmin ADD MEMBER pacauser
 GO
 
+ALTER ROLE db_data_reader ADD MEMBER paca_report_user
+ALTER ROLE db_denydatareader ADD MEMBER paca_report_user
+GO
 
 /**
 

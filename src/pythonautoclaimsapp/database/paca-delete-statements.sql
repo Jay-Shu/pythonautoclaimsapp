@@ -14,6 +14,7 @@
         2024-08-19: Completed overhaul of Stored Procedures.
         2024-10-04: Added Schema to Stored Procedures. Without a Schema they will default to dbo and we need it in paca.
         2025-01-02: POLICY_ID_ACTUAL to POLICIES_ID_ACTUAL which is the correct column name for removePolicy_v1.
+        2025-03-18: Added in GRANT EXECUTE for stored procedures to paca_report_user.
 		
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -315,5 +316,14 @@ SELECT
 END CATCH
 
 RETURN;
+
+GO
+
+GRANT EXECUTE ON OBJECT::paca.removeAccount_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.removeHome_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.removeVehicle_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.removePolicy_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.removeVehicleCoverages_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.removeVehicleClaims_v1 TO paca_sp
 
 GO

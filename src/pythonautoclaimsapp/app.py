@@ -21,7 +21,9 @@ Changelog:
 Functions
 
 Author Notes:
-    Replacement for Toga was necessary due to multiple instances being produced.
+    Replacement for Toga was necessary due to multiple instances being produced. Claude AI Utilized
+for baseline rewrite.
+
 """
 
 import sys
@@ -32,6 +34,12 @@ import logging
 from PySide6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, 
                               QPushButton, QWidget, QLabel)
 from PySide6.QtCore import Qt
+
+"""
+Import our libraries
+"""
+
+from pythonautoclaimsapp.function_library.accounts import AccountsMenuClass
 
 # These imports would be uncommented when the modules are created:
 # from pythonautoclaimsapp.function_library.storage.accounts import AccountsClass
@@ -46,16 +54,6 @@ logging.basicConfig(
 logging.info('Started')
 # Start memory tracking
 tracemalloc.start()
-
-class AccountsMenuClass:
-    @staticmethod
-    def accountsMenu(parent=None, widget=None):
-        def handler():
-            # This is a placeholder for the actual menu handling function
-            # Will need to be implemented based on the original functionality
-            print("Accounts menu clicked")
-            
-        return handler
 
 class PythonAutoClaimsApp(QMainWindow):
     def __init__(self):
@@ -76,21 +74,29 @@ class PythonAutoClaimsApp(QMainWindow):
         main_layout = QVBoxLayout(central_widget)
         
         # Create buttons with the same functionality as in the Toga version
-        accounts_button = QPushButton("Accounts")
-        vehicles_button = QPushButton("Vehicles")
-        homes_button = QPushButton("Homes")
-        policies_button = QPushButton("Policies")
-        vehicle_coverages_button = QPushButton("Vehicle Coverages")
-        vehicle_claims_button = QPushButton("Vehicle Claims")
+        accounts_button = QPushButton("Accounts",parent=None)
+        accounts_button.setFixedSize(800,100)
+        vehicles_button = QPushButton("Vehicles",parent=None)
+        vehicles_button.setFixedSize(800,100)
+        homes_button = QPushButton("Homes",parent=None)
+        homes_button.setFixedSize(800,100)
+        policies_button = QPushButton("Policies",parent=None)
+        policies_button.setFixedSize(800,100)
+        vehicle_coverages_button = QPushButton("Vehicle Coverages",parent=None)
+        vehicle_coverages_button.setFixedSize(800,100)
+        vehicle_claims_button = QPushButton("Vehicle Claims",parent=None)
+        vehicle_claims_button.setFixedSize(800,100)
         
         # Connect buttons to the accounts menu handler temporarily
         # This will need to be replaced with the actual handlers for each button
-        accounts_button.clicked.connect(AccountsMenuClass.accountsMenu())
-        vehicles_button.clicked.connect(AccountsMenuClass.accountsMenu())
-        homes_button.clicked.connect(AccountsMenuClass.accountsMenu())
-        policies_button.clicked.connect(AccountsMenuClass.accountsMenu())
-        vehicle_coverages_button.clicked.connect(AccountsMenuClass.accountsMenu())
-        vehicle_claims_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        
+        accounts_button.clicked.connect(AccountsMenuClass())
+        #accounts_button.clicked.connect(AccountsMenuClass.accountsMenu())
+        vehicles_button.clicked.connect(AccountsMenuClass())
+        homes_button.clicked.connect(AccountsMenuClass())
+        policies_button.clicked.connect(AccountsMenuClass())
+        vehicle_coverages_button.clicked.connect(AccountsMenuClass())
+        vehicle_claims_button.clicked.connect(AccountsMenuClass())
         
         # Add buttons to the layout
         main_layout.addWidget(accounts_button)
@@ -101,11 +107,16 @@ class PythonAutoClaimsApp(QMainWindow):
         main_layout.addWidget(vehicle_claims_button)
         
         # Set some reasonable defaults for the window size
-        self.resize(400, 300)
+        # Y, X on the resize instead of X, Y
+        self.resize(800, 600)
         
     def show_window(self):
         """Show the main window."""
         self.show()
+    
+    def open_accounts_menu(self):
+        self.second_window = AccountsMenuClass()
+        self.second_window.show()
 
 
 def main():
@@ -130,5 +141,5 @@ def main():
     logging.info('Finished')
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

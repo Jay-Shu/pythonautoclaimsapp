@@ -24,6 +24,7 @@
         2024-09-22: Resolved Syntax and spelling issues.
         2024-09-24: getPolicies_v1, getVehicleCoverages_v1.
         2024-10-01: Temporarily added an alternative getAccounts_v1, later testing concluded this was not necessary.
+        2025-03-18: Added in GRANT EXECUTE for permissions to a limited user paca_report_user.
 
     TO DO (Requested):
 		N/A - No current modification requests pending.
@@ -808,5 +809,26 @@ SELECT
 END CATCH
 
 RETURN;
+
+GO
+
+
+GRANT EXECUTE ON OBJECT::paca.getAccounts_v2 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getAccounts_v3 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getAccounts_v4 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getAccounts_v5 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getHomes_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getHomes_v2 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getHomes_v3 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicles_v3 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicles_v2 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getAccounts_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicles_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getPolicies_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v1 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v2 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v3 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicleClaims_v4 TO paca_sp
+GRANT EXECUTE ON OBJECT::paca.getVehicleCoverages_v1 TO paca_sp
 
 GO
