@@ -32,7 +32,8 @@ import tracemalloc
 import time
 import logging
 from PySide6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, 
-                              QPushButton, QWidget, QLabel)
+                              QPushButton, QWidget, QLabel, QToolBar)
+from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Qt
 
 """
@@ -59,7 +60,40 @@ class PythonAutoClaimsApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Python Auto Claims App")
+        self.setup_toolbar()
         self.setup_ui()
+        
+    def setup_toolbar(self):
+        """Create and configure the toolbar and menu bar with File menu and Exit option"""
+    # Create toolbar
+        useOpen = 0
+        toolbar = QToolBar("Main Toolbar")
+        self.addToolBar(toolbar)
+    
+    # Create menu bar
+        menu = self.menuBar()
+    
+    # Create File menu
+        file_menu = menu.addMenu("&File")
+    
+    # Create Exit action
+        exit_action = QAction("Exit", self)
+        exit_action.setStatusTip("Exit the application")
+        exit_action.triggered.connect(self.close)
+    
+    # Add Exit action to the File menu
+        file_menu.addAction(exit_action)
+    
+    # Add a toolbar button if needed
+    # Removing this for now. This is marked as Non-Goal or Could Have.
+        if useOpen == 1:
+            toolbar_action = QAction("Open", self)
+            toolbar_action.setStatusTip("Open a file")
+    # Connect to a method you'll implement
+    # toolbar_action.triggered.connect(self.open_file)
+    
+    # Add the action to the toolbar
+            toolbar.addAction(toolbar_action)
         
     def setup_ui(self):
         """
@@ -69,34 +103,34 @@ class PythonAutoClaimsApp(QMainWindow):
         """
         # Create central widget and layout
         central_widget = QWidget()
+        
         self.setCentralWidget(central_widget)
         
         main_layout = QVBoxLayout(central_widget)
         
         # Create buttons with the same functionality as in the Toga version
         accounts_button = QPushButton("Accounts",parent=None)
-        accounts_button.setFixedSize(800,100)
+        accounts_button.setFixedSize(800,50)
         vehicles_button = QPushButton("Vehicles",parent=None)
-        vehicles_button.setFixedSize(800,100)
+        vehicles_button.setFixedSize(800,50)
         homes_button = QPushButton("Homes",parent=None)
-        homes_button.setFixedSize(800,100)
+        homes_button.setFixedSize(800,50)
         policies_button = QPushButton("Policies",parent=None)
-        policies_button.setFixedSize(800,100)
+        policies_button.setFixedSize(800,50)
         vehicle_coverages_button = QPushButton("Vehicle Coverages",parent=None)
-        vehicle_coverages_button.setFixedSize(800,100)
+        vehicle_coverages_button.setFixedSize(800,50)
         vehicle_claims_button = QPushButton("Vehicle Claims",parent=None)
-        vehicle_claims_button.setFixedSize(800,100)
+        vehicle_claims_button.setFixedSize(800,50)
         
         # Connect buttons to the accounts menu handler temporarily
         # This will need to be replaced with the actual handlers for each button
         
-        accounts_button.clicked.connect(AccountsMenuClass())
-        #accounts_button.clicked.connect(AccountsMenuClass.accountsMenu())
-        vehicles_button.clicked.connect(AccountsMenuClass())
-        homes_button.clicked.connect(AccountsMenuClass())
-        policies_button.clicked.connect(AccountsMenuClass())
-        vehicle_coverages_button.clicked.connect(AccountsMenuClass())
-        vehicle_claims_button.clicked.connect(AccountsMenuClass())
+        accounts_button.clicked.connect(self.open_accounts_menu)
+        vehicles_button.clicked.connect(self.open_vehicles_menu)
+        homes_button.clicked.connect(self.open_homes_menu)
+        policies_button.clicked.connect(self.open_policies_menu)
+        vehicle_coverages_button.clicked.connect(self.open_vehicle_coverages_menu)
+        vehicle_claims_button.clicked.connect(self.open_vehicle_claims_menu)
         
         # Add buttons to the layout
         main_layout.addWidget(accounts_button)
@@ -115,8 +149,28 @@ class PythonAutoClaimsApp(QMainWindow):
         self.show()
     
     def open_accounts_menu(self):
-        self.second_window = AccountsMenuClass()
-        self.second_window.show()
+        self.accounts_window = AccountsMenuClass()
+        self.accounts_window.show()
+    
+    def open_vehicles_menu(self):
+        self.vehicles_window = AccountsMenuClass()  # Temporary
+        self.vehicles_window.show()
+    
+    def open_homes_menu(self):
+        self.homes_window = AccountsMenuClass()  # Temporary
+        self.homes_window.show()
+    
+    def open_policies_menu(self):
+        self.policies_window = AccountsMenuClass()  # Temporary
+        self.policies_window.show()
+    
+    def open_vehicle_coverages_menu(self):
+        self.vehicle_coverages_window = AccountsMenuClass()  # Temporary
+        self.vehicle_coverages_window.show()
+    
+    def open_vehicle_claims_menu(self):
+        self.vehicle_claims_window = AccountsMenuClass()  # Temporary
+        self.vehicle_claims_window.show()
 
 
 def main():

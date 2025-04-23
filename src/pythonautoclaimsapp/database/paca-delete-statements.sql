@@ -37,7 +37,7 @@
 		EXECUTING PROPERLY.
 
     Scalar Variables:
-        @variableName: description
+        @tempTable: Table utilized by each Stored Procedure for processing.
 
 		
 	Citations:
